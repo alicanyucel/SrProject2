@@ -1,0 +1,88 @@
+<div class="flex flex-col flex-auto min-w-0 roles-container">
+    <!-- Main -->
+    <div class="flex-auto p-6 sm:p-10">
+        <div class="h-400 min-h-400 max-h-400 rounded-2xl">
+            <!-- Tablo Başlığı -->
+            <div class="flex flex-col sm:flex-row sm:items-center mb-8 gap-4 roles-header">
+                <div class="flex items-center gap-4 w-full sm:w-auto">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-0">Kullanıcı Rolleri</h2>
+                    <button mat-flat-button 
+                            [color]="'primary'" 
+                            class="sync-button min-w-[180px] h-11 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                            [class.syncing]="isSyncing"
+                            [class.success]="syncSuccess"
+                            [disabled]="isSyncing"
+                            (click)="syncRoles()" 
+                            aria-label="Rolleri senkronize et">
+                        <div class="flex items-center justify-center">
+                            <!-- Success Icon -->
+                            <mat-icon *ngIf="syncSuccess && !isSyncing" class="success-icon">check_circle</mat-icon>
+                            <!-- Sync Icon -->
+                            <mat-icon *ngIf="!isSyncing && !syncSuccess" class="sync-icon">sync</mat-icon>
+                            <!-- Loading Spinner -->
+                            <mat-progress-spinner *ngIf="isSyncing" [diameter]="18" [mode]="'indeterminate'"></mat-progress-spinner>
+                            <span class="font-medium" [class.ml-2]="!isSyncing || syncSuccess">
+                                {{ isSyncing ? 'Senkronize Ediliyor...' : (syncSuccess ? 'Başarılı!' : 'Rolleri Senkronize Et') }}
+                            </span>
+                        </div>
+                    </button>
+                    <mat-form-field appearance="fill" class="fuse-mat-dense w-full sm:w-64 ml-2" [subscriptSizing]="'dynamic'" style="margin-bottom:0;">
+                        <mat-icon matPrefix [svgIcon]="'heroicons_outline:search'"></mat-icon>
+                        <input matInput [(ngModel)]="searchTerm" (input)="applyFilter()" type="search" placeholder="Rol ara..." aria-label="Arama" class="always-visible-placeholder">
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div *ngIf="isLoading" class="loading-container">
+                <mat-progress-spinner
+                    [diameter]="50"
+                    [mode]="'indeterminate'">
+                </mat-progress-spinner>
+                <div class="loading-text">Roller yükleniyor...</div>
+            </div>
+
+            <!-- Roles Table -->            <div *ngIf="!isLoading" class="roles-table">
+                <div class="min-w-[500px]">
+                    <table class="w-full bg-white rounded-2xl overflow-hidden text-sm">
+                        <thead class="bg-gray-50">                            <tr>
+                                <th class="text-center px-4 py-4 font-semibold text-gray-700 whitespace-nowrap">#</th>
+                                <th class="px-4 py-4 font-semibold text-gray-700 whitespace-nowrap">Rol Adı</th>
+                                <th class="px-4 py-4 font-semibold text-gray-700 whitespace-nowrap">Açıklama</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let role of filteredRoles; let i = index"
+                                class="border-b last:border-0 hover:bg-primary-50 transition min-h-[60px]">
+                                <td class="text-center font-bold text-gray-600 px-4 py-4 align-middle">{{ i + 1 }}</td>
+                                <td class="px-4 py-4 align-middle">
+                                    <div class="flex items-center">
+                                        <div class="role-avatar">
+                                            <mat-icon [svgIcon]="'heroicons_outline:shield-check'"></mat-icon>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-gray-900">{{ role.roleName }}</div>
+                                        </div>
+                                    </div>
+                                </td>                                <td class="px-4 py-4 align-middle">
+                                    <div class="text-gray-700 max-w-md">{{ role.description }}</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>                    <!-- No roles message -->
+                    <div *ngIf="filteredRoles.length === 0 && !isLoading" class="empty-state">
+                        <div class="empty-icon">
+                            <mat-icon [svgIcon]="'heroicons_outline:shield-exclamation'"></mat-icon>
+                        </div>
+                        <div class="empty-title">
+                            {{ searchTerm ? 'Arama sonucu bulunamadı' : 'Henüz rol bulunmuyor' }}
+                        </div>
+                        <div class="empty-description">
+                            {{ searchTerm ? 'Arama kriterlerinizi değiştirerek tekrar deneyin.' : 'Rolleri senkronize etmek için yukarıdaki butona tıklayın.' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

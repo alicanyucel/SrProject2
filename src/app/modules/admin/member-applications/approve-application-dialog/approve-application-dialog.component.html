@@ -1,0 +1,213 @@
+<div class="approve-dialog-content">
+  <!-- Header -->
+  <div class="dialog-header">
+    <div class="dialog-title">
+      <mat-icon class="title-icon" [svgIcon]="'heroicons_outline:check-circle'"></mat-icon>
+      <span>Başvuru Onaylama ve Kullanıcı Oluşturma</span>
+    </div>
+    
+    <button mat-icon-button (click)="onCancel()" class="close-button" aria-label="Kapat">
+      <mat-icon [svgIcon]="'heroicons_outline:x'"></mat-icon>
+    </button>
+  </div>
+
+  <!-- Application Info -->
+  <div class="application-info">
+    <div class="info-item">
+      <mat-icon class="info-icon" [svgIcon]="'heroicons_outline:user'"></mat-icon>
+      <div class="info-details">
+        <span class="info-label">Başvuran</span>
+        <span class="info-value">{{ data.applicantName }}</span>
+      </div>
+    </div>
+    
+    <div class="info-item">
+      <mat-icon class="info-icon" [svgIcon]="'heroicons_outline:identification'"></mat-icon>
+      <div class="info-details">
+        <span class="info-label">Başvuru ID</span>
+        <span class="info-value">{{ data.applicationId }}</span>
+      </div>
+    </div>    <div class="info-item">
+      <mat-icon class="info-icon" [svgIcon]="getStatusIcon(data.currentStatus)"
+                [style.color]="getStatusBackgroundColor(data.currentStatus)"></mat-icon>
+      <div class="info-details">
+        <span class="info-label">Mevcut Durum</span>
+        <span class="info-value" [style.color]="getStatusBackgroundColor(data.currentStatus)">
+          {{ getStatusLabel(data.currentStatus) }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <form [formGroup]="approvalForm" (ngSubmit)="onSubmit()" class="approval-form">       
+    <!-- Reddet/Ek Bilgi modunda sadece açıklama alanı -->
+    <div *ngIf="isRejectOrAdditionalInfo; else fullForm">
+      <div class="form-section user-info-section">
+        <div class="section-header">
+          <div class="section-icon-wrapper user-icon">
+            <mat-icon [svgIcon]="data.defaultStatus === ApplicationStatus.Rejected ? 'heroicons_outline:x-circle' : 'heroicons_outline:information-circle'"></mat-icon>
+          </div>
+          <h3 class="section-title">
+            {{ data.defaultStatus === ApplicationStatus.Rejected ? 'Başvuruyu Reddet' : 'Ek Bilgi İste' }}
+          </h3>
+        </div>
+        <mat-form-field appearance="fill" class="w-full">
+          <mat-label>Açıklama (opsiyonel)</mat-label>
+          <textarea matInput formControlName="description" rows="3" placeholder="Açıklama yazabilirsiniz..."></textarea>
+        </mat-form-field>
+      </div>
+    </div>
+    <ng-template #fullForm>
+      <!-- ...existing full form alanları... -->
+      <div class="form-section user-info-section">
+        <div class="section-header">
+          <div class="section-icon-wrapper user-icon">
+            <mat-icon [svgIcon]="'heroicons_outline:user'"></mat-icon>
+          </div>
+          <h3 class="section-title">Kullanıcı Bilgileri</h3>
+        </div>
+        
+        <!-- Name Fields Row -->
+        <div class="user-fields-row">
+          <mat-form-field appearance="fill" class="user-field">
+            <mat-label>Ad</mat-label>
+            <input matInput formControlName="firstName" placeholder="Ad">
+            <mat-error *ngIf="approvalForm.get('firstName')?.hasError('required')">
+              Ad zorunludur
+            </mat-error>
+            <mat-error *ngIf="approvalForm.get('firstName')?.hasError('minlength')">
+              En az 2 karakter olmalıdır
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="user-field">
+            <mat-label>Soyad</mat-label>
+            <input matInput formControlName="lastName" placeholder="Soyad">
+            <mat-error *ngIf="approvalForm.get('lastName')?.hasError('required')">
+              Soyad zorunludur
+            </mat-error>
+            <mat-error *ngIf="approvalForm.get('lastName')?.hasError('minlength')">
+              En az 2 karakter olmalıdır
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Contact Fields Row -->
+        <div class="user-fields-row">
+          <mat-form-field appearance="fill" class="user-field">
+            <mat-label>E-posta</mat-label>
+            <input matInput formControlName="email" placeholder="E-posta" type="email">
+            <mat-error *ngIf="approvalForm.get('email')?.hasError('required')">
+              E-posta zorunludur
+            </mat-error>
+            <mat-error *ngIf="approvalForm.get('email')?.hasError('email')">
+              Geçerli bir e-posta adresi giriniz
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="user-field">
+            <mat-label>Telefon</mat-label>
+            <input matInput formControlName="phoneNumber" placeholder="Telefon">
+            <mat-error *ngIf="approvalForm.get('phoneNumber')?.hasError('required')">
+              Telefon zorunludur
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Identity and Role Row -->
+        <div class="user-fields-row">
+          <mat-form-field appearance="fill" class="user-field">
+            <mat-label>TC Kimlik No</mat-label>
+            <input matInput formControlName="identityNumber" placeholder="TC Kimlik No" maxlength="11">
+            <mat-error *ngIf="approvalForm.get('identityNumber')?.hasError('required')">
+              TC Kimlik No zorunludur
+            </mat-error>
+            <mat-error *ngIf="approvalForm.get('identityNumber')?.hasError('minlength') || approvalForm.get('identityNumber')?.hasError('maxlength')">
+              TC Kimlik No 11 karakter olmalıdır
+            </mat-error>
+          </mat-form-field>        <mat-form-field appearance="fill" class="user-field">
+            <mat-label>Rol</mat-label>
+            <mat-select formControlName="roleId" placeholder="Rol seçiniz">
+              <mat-option [value]="'5ed62427-ec28-46ce-be0e-376005fae043'">Admin</mat-option>
+              <mat-option [value]="'46fecbbe-79b3-4a0c-85d2-a7846d901272'">System</mat-option>
+              <mat-option [value]="'ba9c54b2-d78b-44e2-aa7e-33c85aab0497'">Doctor</mat-option>
+              <mat-option [value]="'e5b650ef-c509-42bd-8e9f-f784cbb338ed'">Reporter</mat-option>
+              <mat-option [value]="'58d79190-fa0a-4a75-befb-a11b270b1b0e'">Company</mat-option>
+              <mat-option [value]="'47d90a18-da9e-4fe7-9199-7b73697f2001'">Hospital</mat-option>
+            </mat-select>
+            <mat-error *ngIf="approvalForm.get('roleId')?.hasError('required')">
+              Rol seçimi zorunludur
+            </mat-error>
+          </mat-form-field>
+        </div>      <!-- Password Fields Row -->
+        <div class="user-fields-row">
+          <mat-form-field appearance="fill" class="user-field">
+            <mat-label>Şifre</mat-label>
+            <input matInput formControlName="password" 
+                   [type]="showPassword ? 'text' : 'password'" 
+                   placeholder="Şifre giriniz"
+                   autocomplete="new-password">
+            <button mat-icon-button matSuffix type="button" 
+                    (click)="togglePasswordVisibility()"
+                    [attr.aria-label]="'Şifreyi ' + (showPassword ? 'gizle' : 'göster')"
+                    [attr.aria-pressed]="showPassword">
+              <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>          <mat-error *ngIf="approvalForm.get('password')?.hasError('required')">
+              Şifre zorunludur
+            </mat-error>
+            <mat-error *ngIf="approvalForm.get('password')?.hasError('minlength')">
+              En az 6 karakter olmalıdır
+            </mat-error>
+            <mat-error *ngIf="approvalForm.get('password')?.hasError('pattern')">
+              Şifre en az bir büyük harf, bir küçük harf ve bir rakam içermelidir
+            </mat-error>
+          </mat-form-field>        <mat-form-field appearance="fill" class="user-field">
+            <mat-label>Şifre Tekrar</mat-label>
+            <input matInput formControlName="repassword" 
+                   [type]="showConfirmPassword ? 'text' : 'password'" 
+                   placeholder="Şifreyi tekrar giriniz"
+                   autocomplete="new-password">
+            <button mat-icon-button matSuffix type="button" 
+                    (click)="toggleConfirmPasswordVisibility()"
+                    [attr.aria-label]="'Şifreyi ' + (showConfirmPassword ? 'gizle' : 'göster')"
+                    [attr.aria-pressed]="showConfirmPassword">
+              <mat-icon>{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-error *ngIf="approvalForm.get('repassword')?.hasError('required')">
+              Şifre tekrar zorunludur
+            </mat-error>
+            <mat-error *ngIf="approvalForm.get('repassword')?.hasError('minlength')">
+              En az 6 karakter olmalıdır
+            </mat-error>
+            <mat-error *ngIf="approvalForm.hasError('passwordMismatch')">
+              Şifreler eşleşmiyor
+            </mat-error>
+          </mat-form-field></div>
+      </div>
+    </ng-template>
+  </form>
+
+  <!-- Actions -->
+  <div class="dialog-actions">
+    <button mat-button 
+            type="button" 
+            (click)="onCancel()" 
+            class="cancel-button"
+            [disabled]="isLoading">
+      İptal
+    </button>
+    <button mat-flat-button 
+            color="primary" 
+            type="submit"
+            (click)="onSubmit()"
+            class="submit-button"
+            [disabled]="!approvalForm.valid || isLoading">
+      <mat-spinner *ngIf="isLoading" diameter="18" class="mr-2"></mat-spinner>
+      <mat-icon *ngIf="!isLoading" [svgIcon]="isRejectOrAdditionalInfo ? (data.defaultStatus === ApplicationStatus.Rejected ? 'heroicons_outline:x' : 'heroicons_outline:information-circle') : 'heroicons_outline:check'"></mat-icon>
+      <span class="ml-2">
+        {{ isLoading ? (isRejectOrAdditionalInfo ? (data.defaultStatus === ApplicationStatus.Rejected ? 'Reddediliyor...' : 'Gönderiliyor...') : 'Onaylanıyor...') : (isRejectOrAdditionalInfo ? (data.defaultStatus === ApplicationStatus.Rejected ? 'Reddet' : 'Ek Bilgi İste') : 'Onayla ve Kaydet') }}
+      </span>
+    </button>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+<div class="template-list">
+  <h3>Şablonlar</h3>
+  <mat-accordion *ngIf="templates.length">
+    <mat-expansion-panel *ngFor="let template of templates">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{ template.name }}
+        </mat-panel-title>
+        <mat-panel-description>
+          <button mat-icon-button (click)="onEdit(template)"><mat-icon>edit</mat-icon></button>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <div [innerHTML]="template.template"></div>
+    </mat-expansion-panel>
+  </mat-accordion>
+  <div *ngIf="!templates.length">Şablon bulunamadı.</div>
+</div>

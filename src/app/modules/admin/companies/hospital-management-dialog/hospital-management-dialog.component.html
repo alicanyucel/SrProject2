@@ -1,0 +1,277 @@
+<div class="hospital-management-dialog">
+  <!-- Dialog Header -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="company-info">
+        <mat-icon class="company-icon">local_hospital</mat-icon>
+        <div class="company-details">
+          <h2 class="company-title">{{ data.companyName | uppercase }}</h2>
+          <span class="section-subtitle">Hastane Yönetimi</span>
+        </div>
+      </div>
+      <button mat-icon-button 
+              (click)="onClose()" 
+              class="close-button"
+              aria-label="Kapat"
+              matTooltip="Kapat">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Content Section -->
+  <div class="dialog-content">
+    <!-- Tab Navigation -->
+    <mat-tab-group mat-align-tabs="start" class="hospital-tabs">
+      <!-- Hastane Listesi Tab -->
+      <mat-tab label="Hastane Listesi">
+        <div class="tab-content">
+          <!-- Loading State -->
+          <div *ngIf="loading" class="loading-container">
+            <mat-spinner diameter="40"></mat-spinner>
+            <p class="loading-text">Hastaneler yükleniyor...</p>
+          </div>
+
+          <!-- Hospital List -->
+          <div *ngIf="!loading" class="hospital-list-section">
+            <!-- Search -->
+            <div class="search-section">
+              <div class="custom-search-field">
+                <label class="search-label">Hastane Ara</label>
+                <div class="search-input-wrapper">
+                  <input class="search-input" 
+                         [(ngModel)]="hospitalSearch" 
+                         (input)="onHospitalSearchChange()" 
+                         placeholder="Hastane adı, şehir, bölüm...">
+                  <mat-icon class="search-icon">search</mat-icon>
+                </div>
+              </div>
+            </div>
+
+            <!-- Results Count -->
+            <div class="results-count">
+              <span class="count-text">
+                {{ filteredHospitals.length }} hastane bulundu
+              </span>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="filteredHospitals.length === 0" class="empty-state">
+              <mat-icon class="empty-icon">local_hospital</mat-icon>
+              <h3 class="empty-title">
+                {{ hospitalSearch ? 'Arama sonucu bulunamadı' : 'Henüz hastane eklenmemiş' }}
+              </h3>
+              <p class="empty-description">
+                {{ hospitalSearch ? 'Arama kriterlerinizi değiştirerek tekrar deneyin.' : 'Bu şirkete henüz hastane eklenmemiş.' }}
+              </p>
+            </div>
+
+            <!-- Hospital Cards -->
+            <div *ngIf="filteredHospitals.length > 0" class="hospital-cards">
+              <div *ngFor="let hospital of paginatedHospitals" class="hospital-card">
+                <div class="card-header">
+                  <div class="hospital-info">
+                    <h4 class="hospital-name">{{ hospital.partitionName }}</h4>
+                    <span class="hospital-modality">{{ hospital.modality }}</span>
+                  </div>
+                  <div class="hospital-status">
+                    <span [class]="hospital.urgent ? 'urgent-badge' : 'normal-badge'">
+                      {{ hospital.urgent ? 'Acil' : 'Normal' }}
+                    </span>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="hospital-details">
+                    <div class="detail-item" *ngIf="hospital.partitionCode">
+                      <mat-icon class="detail-icon">qr_code</mat-icon>
+                      <span class="detail-text">{{ hospital.partitionCode }}</span>
+                    </div>
+                    <div class="detail-item" *ngIf="hospital.referenceKey">
+                      <mat-icon class="detail-icon">key</mat-icon>
+                      <span class="detail-text">{{ hospital.referenceKey }}</span>
+                    </div>
+                    <div class="detail-item" *ngIf="hospital.companyCode">
+                      <mat-icon class="detail-icon">business</mat-icon>
+                      <span class="detail-text">{{ hospital.companyCode }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-actions">
+                  <button mat-button color="primary" (click)="editHospital(hospital)">
+                    <mat-icon>edit</mat-icon>
+                    Düzenle
+                  </button>
+                  <button mat-button color="warn" (click)="deleteHospital(hospital)">
+                    <mat-icon>delete</mat-icon>
+                    Sil
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pagination -->
+            <mat-paginator *ngIf="filteredHospitals.length > pageSize"
+                           [length]="filteredHospitals.length"
+                           [pageSize]="pageSize"
+                           [pageIndex]="pageIndex"
+                           [pageSizeOptions]="[5, 10, 20]"
+                           (page)="onPageChange($event)"
+                           [showFirstLastButtons]="true">
+            </mat-paginator>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Hastane Ekle Tab -->
+      <mat-tab label="Hastane Ekle">
+        <div class="tab-content">
+          <div class="add-hospital-section">
+            <!-- Form Header -->
+            <div class="form-header">
+              <h3 class="form-title">Yeni Hastane Ekleme</h3>
+              <p class="form-description">Şirkete yeni hastane/bölüm bilgisi ekleyin</p>
+            </div>
+
+            <!-- Add Hospital Form -->
+            <form [formGroup]="addForm" (ngSubmit)="onAddHospital()" class="add-hospital-form">
+              <!-- Form Alert -->
+              <fuse-alert *ngIf="showFormAlert && formAlert"
+                          [appearance]="'outline'"
+                          [showIcon]="true"
+                          [type]="formAlert.type"
+                          class="mb-4">
+                {{ formAlert.message }}
+              </fuse-alert>
+
+              <!-- Form Fields -->
+              <div class="form-row">
+                <!-- Hospital ID -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense">
+                  <mat-label>Hastane ID</mat-label>
+                  <input matInput 
+                         formControlName="hospitalId"
+                         placeholder="3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                         class="always-visible-placeholder">
+                  <mat-hint>Bağlanılacak hastanenin ID'si (GUID formatında)</mat-hint>
+                  <mat-error *ngIf="addForm.get('hospitalId')?.errors && addForm.get('hospitalId')?.touched">
+                    <span *ngIf="addForm.get('hospitalId')?.errors?.['required']">Hastane ID zorunludur</span>
+                    <span *ngIf="addForm.get('hospitalId')?.errors?.['pattern']">Geçerli bir GUID formatı giriniz (örn: 3fa85f64-5717-4562-b3fc-2c963f66afa6)</span>
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <!-- Partition Name -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense">
+                  <mat-label>Bölüm Adı</mat-label>
+                  <input matInput 
+                         formControlName="partitionName"
+                         placeholder="Radyoloji, Kardiyoloji, Nöroloji vb."
+                         class="always-visible-placeholder">
+                  <mat-hint>Hastane bölümünün adı</mat-hint>
+                  <mat-error *ngIf="addForm.get('partitionName')?.errors && addForm.get('partitionName')?.touched">
+                    Bölüm adı zorunludur
+                  </mat-error>
+                </mat-form-field>
+
+                <!-- Modality -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense">
+                  <mat-label>Modalite</mat-label>
+                  <input matInput 
+                         formControlName="modality"
+                         placeholder="CT, MR, X-Ray, Ultrason vb."
+                         class="always-visible-placeholder">
+                  <mat-hint>Kullanılacak tıbbi görüntüleme modalitesi</mat-hint>
+                  <mat-error *ngIf="addForm.get('modality')?.errors && addForm.get('modality')?.touched">
+                    Modalite zorunludur
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <!-- Partition Code -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense">
+                  <mat-label>Bölüm Kodu</mat-label>
+                  <input matInput 
+                         formControlName="partitionCode"
+                         placeholder="RAD001, KAR002, NOR003 vb."
+                         class="always-visible-placeholder">
+                  <mat-hint>İsteğe bağlı - Bölüm için özel kod</mat-hint>
+                </mat-form-field>
+
+                <!-- Reference Key -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense">
+                  <mat-label>Referans Anahtarı</mat-label>
+                  <input matInput 
+                         formControlName="referenceKey"
+                         placeholder="REF-2024-001"
+                         class="always-visible-placeholder">
+                  <mat-hint>İsteğe bağlı - Sistem referans anahtarı</mat-hint>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <!-- Company Code -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense">
+                  <mat-label>Şirket Kodu</mat-label>
+                  <input matInput 
+                         formControlName="companyCode"
+                         placeholder="COMP001, HOSPITAL-A vb."
+                         class="always-visible-placeholder">
+                  <mat-hint>İsteğe bağlı - Şirket için özel kod</mat-hint>
+                </mat-form-field>
+
+                <!-- Company ID -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense">
+                  <mat-label>Şirket ID</mat-label>
+                  <input matInput 
+                         formControlName="companyId"
+                         placeholder="3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                         class="always-visible-placeholder">
+                  <mat-hint>Bu şirkete ait GUID formatında şirket ID'si</mat-hint>
+                  <mat-error *ngIf="addForm.get('companyId')?.errors && addForm.get('companyId')?.touched">
+                    <span *ngIf="addForm.get('companyId')?.errors?.['required']">Şirket ID zorunludur</span>
+                    <span *ngIf="addForm.get('companyId')?.errors?.['pattern']">Geçerli bir GUID formatı giriniz (örn: 3fa85f64-5717-4562-b3fc-2c963f66afa6)</span>
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <!-- Urgent Checkbox -->
+              <div class="checkbox-section">
+                <mat-checkbox formControlName="urgent" color="primary" class="urgent-checkbox">
+                  Acil Durum Bölümü
+                </mat-checkbox>
+                <span class="checkbox-hint">Bu bölüm acil durum hastalarına hizmet veriyor mu?</span>
+              </div>
+
+              <!-- Form Actions -->
+              <div class="form-actions">
+                <button type="button" 
+                        mat-stroked-button 
+                        (click)="resetForm()"
+                        [disabled]="adding">
+                  <mat-icon>refresh</mat-icon>
+                  Formu Temizle
+                </button>
+                
+                <button type="submit" 
+                        mat-flat-button 
+                        color="primary"
+                        [disabled]="addForm.invalid || adding">
+                  <span *ngIf="!adding" class="flex items-center">
+                    <mat-icon>add</mat-icon>
+                    Hastane Ekle
+                  </span>
+                  <span *ngIf="adding" class="flex items-center">
+                    <mat-progress-spinner [diameter]="16" [mode]="'indeterminate'" color="primary"></mat-progress-spinner>
+                    <span class="ml-2">Ekleniyor...</span>
+                  </span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>

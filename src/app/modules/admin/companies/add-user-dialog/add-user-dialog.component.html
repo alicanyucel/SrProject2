@@ -1,0 +1,225 @@
+<div class="dialog-content">
+  <!-- Dialog Header -->
+  <div class="dialog-header">
+    <h2 mat-dialog-title class="dialog-title">
+      <mat-icon class="title-icon">person_add</mat-icon>
+      Şirkete Kullanıcı Ekle
+    </h2>
+    <button mat-icon-button (click)="onCancel()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+
+  <div class="company-info">
+    <mat-icon class="company-icon">business</mat-icon>
+    <div class="company-details">
+      <span class="company-name">{{ data.company.companySmallTitle }}</span>
+    </div>
+  </div>
+
+  <form [formGroup]="addUserForm" (ngSubmit)="addUserToCompanySubmit()" class="user-form">
+    
+    <!-- TC Kimlik No Search Section -->
+    <div class="search-section">
+      <h3 class="section-title">Kullanıcı Ara</h3>
+      <div class="search-container">        <mat-form-field appearance="fill" class="search-field fuse-mat-dense" [subscriptSizing]="'dynamic'">
+          <mat-label>TC Kimlik No</mat-label>
+          <input matInput 
+                 formControlName="searchIdentityNumber" 
+                 placeholder="11 haneli TC Kimlik No"
+                 maxlength="11"
+                 type="text"
+                 (input)="resetFormForNewSearch()"
+                 class="always-visible-placeholder">
+          <mat-error *ngIf="addUserForm.get('searchIdentityNumber')?.errors && addUserForm.get('searchIdentityNumber')?.touched">
+            {{ getFieldError('searchIdentityNumber') }}
+          </mat-error>
+        </mat-form-field>        <button mat-raised-button 
+                color="primary" 
+                type="button"
+                (click)="searchUserByIdentityNumber()"
+                [disabled]="searchingUser"
+                class="search-button">
+          <mat-icon *ngIf="!searchingUser">search</mat-icon>
+          <mat-spinner *ngIf="searchingUser" diameter="20"></mat-spinner>
+          {{ searchingUser ? 'Aranıyor...' : 'Ara' }}
+        </button>
+      </div>
+
+      <!-- Search Result Alert -->
+      <fuse-alert
+        *ngIf="userSearchAlert"
+        [appearance]="'outline'"
+        [showIcon]="true"
+        [type]="userSearchAlert.type"
+        [dismissible]="true"
+        (dismissed)="hideAlert('userSearch')"
+        class="search-alert">
+        {{ userSearchAlert.message }}
+      </fuse-alert>
+      
+      <!-- Warning message when user already exists in company -->
+      <div *ngIf="userAlreadyInCompany" class="user-exists-warning">
+        <mat-icon class="warning-icon">warning</mat-icon>
+        <span class="warning-text">Bu kullanıcı zaten şirkete ekli. Farklı bir TC Kimlik No ile arama yapınız.</span>
+      </div>
+    </div>
+
+    <!-- User Information Form -->
+    <div class="form-section">
+      <h3 class="section-title">Kullanıcı Bilgileri</h3>
+      <!-- TC Kimlik No (auto-filled or manual) -->
+      <mat-form-field appearance="fill" class="full-width fuse-mat-dense" [subscriptSizing]="'dynamic'">
+        <mat-label>TC Kimlik No</mat-label>
+        <input matInput 
+               formControlName="identityNumber" 
+               placeholder="11 haneli TC Kimlik No"
+               maxlength="11"
+               type="text"
+               [readonly]="userAlreadyInCompany"
+               [class.locked-input]="userAlreadyInCompany"
+               class="always-visible-placeholder">
+        <mat-error *ngIf="addUserForm.get('identityNumber')?.errors && addUserForm.get('identityNumber')?.touched">
+          {{ getFieldError('identityNumber') }}
+        </mat-error>
+      </mat-form-field>      <!-- Name Fields -->
+      <div class="name-fields-row">
+        <mat-form-field appearance="fill" class="name-field fuse-mat-dense" [subscriptSizing]="'dynamic'">
+          <mat-label>Ad</mat-label>
+          <input matInput 
+                 formControlName="firstName" 
+                 placeholder="Kullanıcının adı"
+                 type="text"
+                 [readonly]="userAlreadyInCompany"
+                 [class.locked-input]="userAlreadyInCompany"
+                 class="always-visible-placeholder">
+          <mat-error *ngIf="addUserForm.get('firstName')?.errors && addUserForm.get('firstName')?.touched">
+            {{ getFieldError('firstName') }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="name-field fuse-mat-dense" [subscriptSizing]="'dynamic'">
+          <mat-label>Soyad</mat-label>
+          <input matInput 
+                 formControlName="lastName" 
+                 placeholder="Kullanıcının soyadı"
+                 type="text"
+                 [readonly]="userAlreadyInCompany"
+                 [class.locked-input]="userAlreadyInCompany"
+                 class="always-visible-placeholder">
+          <mat-error *ngIf="addUserForm.get('lastName')?.errors && addUserForm.get('lastName')?.touched">
+            {{ getFieldError('lastName') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Contact Fields -->
+      <div class="contact-fields-row">
+        <mat-form-field appearance="fill" class="contact-field fuse-mat-dense" [subscriptSizing]="'dynamic'">
+          <mat-label>Telefon Numarası</mat-label>
+          <input matInput 
+                 formControlName="phoneNumber" 
+                 placeholder="Telefon numarası"
+                 type="tel"
+                 [readonly]="userAlreadyInCompany"
+                 [class.locked-input]="userAlreadyInCompany"
+                 class="always-visible-placeholder">
+          <mat-error *ngIf="addUserForm.get('phoneNumber')?.errors && addUserForm.get('phoneNumber')?.touched">
+            {{ getFieldError('phoneNumber') }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="contact-field fuse-mat-dense" [subscriptSizing]="'dynamic'">
+          <mat-label>E-posta</mat-label>
+          <input matInput 
+                 formControlName="email" 
+                 placeholder="E-posta adresi"
+                 type="email"
+                 [readonly]="userAlreadyInCompany"
+                 [class.locked-input]="userAlreadyInCompany"
+                 class="always-visible-placeholder">
+          <mat-error *ngIf="addUserForm.get('email')?.errors && addUserForm.get('email')?.touched">
+            {{ getFieldError('email') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Date Fields -->
+      <div class="date-fields-row">
+        <mat-form-field appearance="fill" class="date-field fuse-mat-dense" [subscriptSizing]="'dynamic'">
+          <mat-label>Başlangıç Tarihi</mat-label>
+          <input matInput 
+                 [matDatepicker]="startDatePicker" 
+                 formControlName="startDate"
+                 placeholder="Başlangıç tarihi seçin"
+                 [readonly]="userAlreadyInCompany"
+                 [class.locked-input]="userAlreadyInCompany"
+                 class="always-visible-placeholder">
+          <mat-datepicker-toggle matIconSuffix [for]="startDatePicker" [disabled]="userAlreadyInCompany"></mat-datepicker-toggle>
+          <mat-datepicker #startDatePicker [disabled]="userAlreadyInCompany"></mat-datepicker>
+          <mat-error *ngIf="addUserForm.get('startDate')?.errors && addUserForm.get('startDate')?.touched">
+            {{ getFieldError('startDate') }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="date-field fuse-mat-dense" [subscriptSizing]="'dynamic'">
+          <mat-label>Bitiş Tarihi</mat-label>
+          <input matInput 
+                 [matDatepicker]="endDatePicker" 
+                 formControlName="endDate"
+                 placeholder="Bitiş tarihi seçin (opsiyonel)"
+                 [readonly]="userAlreadyInCompany"
+                 [class.locked-input]="userAlreadyInCompany"
+                 class="always-visible-placeholder">
+          <mat-datepicker-toggle matIconSuffix [for]="endDatePicker" [disabled]="userAlreadyInCompany"></mat-datepicker-toggle>
+          <mat-datepicker #endDatePicker [disabled]="userAlreadyInCompany"></mat-datepicker>
+          <mat-error *ngIf="addUserForm.get('endDate')?.errors && addUserForm.get('endDate')?.touched">
+            {{ getFieldError('endDate') }}
+          </mat-error>
+        </mat-form-field>
+      </div>      <!-- Active Status -->
+      <div class="checkbox-section">
+        <mat-checkbox formControlName="isActive" 
+                      color="primary" 
+                      class="active-checkbox"
+                      [disabled]="userAlreadyInCompany">
+          Kullanıcı Aktif
+        </mat-checkbox>
+      </div>
+    </div>
+
+    <!-- Form Submit Alert -->
+    <fuse-alert
+      *ngIf="showAddUserAlert && addUserAlert"
+      [appearance]="'outline'"
+      [showIcon]="true"
+      [type]="addUserAlert.type"
+      [dismissible]="true"
+      (dismissed)="hideAlert('addUser')"
+      class="submit-alert">
+      {{ addUserAlert.message }}
+    </fuse-alert>
+
+    <!-- Dialog Actions -->
+    <div class="dialog-actions" mat-dialog-actions>
+      <button mat-button 
+              type="button"
+              (click)="onCancel()"
+              [disabled]="addingUser"
+              class="cancel-button">
+        İptal
+      </button>
+      <button mat-raised-button 
+              color="primary"
+              type="submit"
+              [disabled]="addingUser || addUserForm.invalid || userAlreadyInCompany"
+              class="submit-button">
+        <mat-icon *ngIf="!addingUser">person_add</mat-icon>
+        <mat-spinner *ngIf="addingUser" diameter="20"></mat-spinner>
+        {{ addingUser ? 'Ekleniyor...' : (userAlreadyInCompany ? 'Kullanıcı Zaten Ekli' : 'Kullanıcıyı Ekle') }}
+      </button>
+    </div>
+
+  </form>
+</div>

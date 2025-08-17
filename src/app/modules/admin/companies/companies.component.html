@@ -1,0 +1,854 @@
+<div class="flex flex-col flex-auto min-w-0">
+  <fuse-alert *ngIf="(fuseAlert.alert$ | async) as alert"
+              [type]="alert.type" 
+              [appearance]="'fill'" 
+              [dismissible]="true" 
+              (closed)="fuseAlert.clearAlert()" 
+              @shake
+              class="mb-4">
+    {{ alert.message }}
+  </fuse-alert>  
+  <!-- Main -->
+  <div class="flex-auto p-6 sm:p-10">
+    <div class="h-400 min-h-400 max-h-400 rounded-2xl">
+      <!-- Tablo Başlığı -->
+      <div class="flex flex-col sm:flex-row sm:items-center mb-8 gap-4">
+        <div class="flex items-center gap-4 w-full sm:w-auto">
+          <h2 class="text-3xl font-bold text-gray-800 mb-0">Şirket Listesi</h2>
+          <button mat-flat-button 
+                  [color]="'primary'" 
+                  class="min-w-[140px] h-10 rounded-md ml-4"
+                  (click)="onOpenCreateModal()" 
+                  aria-label="Yeni şirket ekle">
+            <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+            <span class="ml-2">Şirket Ekle</span>
+          </button>
+          <mat-form-field appearance="fill" class="fuse-mat-dense w-full sm:w-64 ml-2" [subscriptSizing]="'dynamic'">
+            <mat-icon matPrefix [svgIcon]="'heroicons_outline:search'"></mat-icon>
+            <input matInput 
+                   [(ngModel)]="search" 
+                   (input)="onSearchChange()" 
+                   type="search"
+                   placeholder="Ara..." 
+                   aria-label="Arama" 
+                   class="always-visible-placeholder">
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="fuse-mat-dense w-40 ml-2" [subscriptSizing]="'dynamic'" style="height: 40px; display: flex; flex-direction: column; justify-content: flex-end;">
+            <mat-label style="font-size: 13px; margin-bottom: 2px; margin-left: 2px;">Durum</mat-label>
+            <mat-select [(ngModel)]="statusFilter" (selectionChange)="updatePagination()" style="height: 36px;">
+              <mat-option value="">Tümü</mat-option>
+              <mat-option value="true">Aktif</mat-option>
+              <mat-option value="false">Pasif</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="fuse-mat-dense w-48 ml-2" [subscriptSizing]="'dynamic'" style="height: 40px; display: flex; flex-direction: column; justify-content: flex-end;">
+            <mat-label style="font-size: 13px; margin-bottom: 2px; margin-left: 2px;">Firma Tipi</mat-label>
+            <mat-select [(ngModel)]="companyTypeFilter" (selectionChange)="updatePagination()" style="height: 36px;">
+              <mat-option value="">Tümü</mat-option>
+              <mat-option *ngFor="let type of companyTypeList" [value]="type.id">{{ type.name }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+        <div class="overflow-x-auto rounded-2xl shadow-lg border border-gray-200 bg-white">
+        <div class="min-w-[1800px]"> <!-- Minimum width increased for new columns -->
+          <table class="w-full bg-white rounded-2xl overflow-hidden text-sm">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="text-center px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">#</th>
+                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Şirket ID</th>
+                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Kısa Adı</th>
+                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Tam Adı</th>
+                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Vergi No</th>
+                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Vergi Dairesi</th>
+                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Şehir</th>
+                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">İlçe</th>
+                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Adres</th>
+                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Telefon</th>
+                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">E-posta</th>
+                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Temsilci</th>
+                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Web Sitesi</th>
+                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Şirket Tipi</th>
+                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Oluşt. Tarihi</th>
+                <th class="text-center px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Durum</th>
+                <th class="text-center px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">İşlemler</th>
+              </tr>
+            </thead>            <tbody>
+              <tr *ngFor="let company of paginatedCompanies; let i = index"
+                  class="border-b last:border-0 hover:bg-primary-50 transition min-h-[56px]">
+                <td class="text-center font-bold text-gray-600 px-3 py-3 align-middle">{{ (pageIndex * pageSize) + i + 1 }}</td>
+                <td class="px-3 py-3 text-gray-800 align-middle font-mono text-xs">{{ company.id }}</td>
+                <td class="px-3 py-3 text-gray-800 align-middle font-semibold">{{ company.companySmallTitle }}</td>
+                <td class="px-3 py-3 text-gray-800 align-middle" [title]="company.companyTitle">
+                  {{ company.companyTitle?.length > 30 ? (company.companyTitle | slice:0:30) + '...' : company.companyTitle }}
+                </td>
+                <td class="px-3 py-3 text-gray-800 align-middle font-mono text-xs">{{ company.taxNo }}</td>
+                <td class="px-3 py-3 text-gray-800 align-middle">{{ company.taxOffice }}</td>
+                <td class="px-3 py-3 text-gray-800 align-middle">{{ company.city }}</td>
+                <td class="px-3 py-3 text-gray-800 align-middle">{{ company.district }}</td>
+                <td class="px-3 py-3 text-gray-800 align-middle" [title]="company.address">
+                  {{ company.address?.length > 25 ? (company.address | slice:0:25) + '...' : company.address }}
+                </td>
+                <td class="px-3 py-3 text-gray-800 align-middle font-mono text-xs">{{ company.phoneNumber || '-' }}</td>
+                <td class="px-3 py-3 text-gray-800 align-middle">{{ company.email || '-' }}</td>
+                <td class="px-3 py-3 text-gray-800 align-middle">{{ company.representative }}</td>
+                <td class="px-3 py-3 text-gray-800 align-middle">
+                  <a *ngIf="company.webSite" [href]="company.webSite" target="_blank" 
+                     class="text-blue-600 hover:text-blue-800 underline">
+                    {{ company.webSite?.length > 20 ? (company.webSite | slice:0:20) + '...' : company.webSite }}
+                  </a>
+                  <span *ngIf="!company.webSite">-</span>
+                </td>
+                <td class="px-3 py-3 text-gray-800 align-middle">
+                  <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
+                    {{ company.companyType?.name || '-' }}
+                  </span>
+                </td>
+                <td class="px-3 py-3 text-gray-800 align-middle text-xs">
+                  {{ company.createdAt | date:'dd.MM.yyyy HH:mm' }}
+                </td>
+                <td class="text-center px-3 py-3 align-middle">
+                  <span
+                      [class]="company.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                      class="text-xs font-medium px-2 py-1 rounded-full">
+                    {{ company.status ? 'Aktif' : 'Pasif' }}
+                  </span>
+                </td>
+                <td class="text-center px-3 py-3 align-middle">
+                  <div class="flex justify-center items-center">
+                    <button mat-icon-button
+                            [matMenuTriggerFor]="actionMenu" 
+                            [matMenuTriggerData]="{company: company}"
+                            class="h-8 w-8 hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center"
+                            title="İşlemler" 
+                            aria-label="İşlemler">
+                      <!-- 3 nokta ikonu -->
+                      <div class="flex flex-col items-center justify-center space-y-0.5">
+                        <div class="w-1 h-1 bg-gray-600 rounded-full"></div>
+                        <div class="w-1 h-1 bg-gray-600 rounded-full"></div>
+                        <div class="w-1 h-1 bg-gray-600 rounded-full"></div>
+                      </div>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+                <!-- Empty State Row -->
+              <tr *ngIf="paginatedCompanies.length === 0" class="border-b">
+                <td colspan="17" class="text-center py-12">
+                  <div class="flex flex-col items-center justify-center text-gray-500">
+                    <mat-icon [svgIcon]="'heroicons_outline:building-office'" class="icon-size-12 mb-4 text-gray-400"></mat-icon>
+                    <h3 class="text-lg font-medium text-gray-700 mb-2">
+                      {{ search && search.trim() !== '' ? 'Arama sonucu bulunamadı' : 'Henüz şirket bulunmuyor' }}
+                    </h3>
+                    <p class="text-sm text-gray-500 max-w-md">
+                      {{ search && search.trim() !== '' ?
+                      'Arama kriterlerinizi değiştirerek tekrar deneyin.' :
+                      'Yeni şirket eklemek için yukarıdaki "Şirket Ekle" butonunu kullanın.'
+                      }}
+                    </p>
+                    <button *ngIf="!search || search.trim() === ''" 
+                            mat-flat-button
+                            [color]="'primary'" 
+                            (click)="onOpenCreateModal()"
+                            class="mt-4 min-w-[140px] h-10 rounded-md">
+                      <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                      <span class="ml-2">Şirket Ekle</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <mat-paginator *ngIf="filteredCompanies.length > 0" 
+                       [length]="filteredCompanies.length"
+                       [pageSize]="pageSize" 
+                       [pageIndex]="pageIndex" 
+                       [pageSizeOptions]="[5, 10, 20]"
+                       (page)="onPageChange($event)" 
+                       [showFirstLastButtons]="true">
+        </mat-paginator>
+      </div>
+    </div>    <!-- Company Actions Menu -->
+    <mat-menu #actionMenu="matMenu" class="company-actions-menu">
+      <ng-template matMenuContent let-company="company">
+        <button mat-menu-item (click)="editCompany(company)" class="flex items-center">
+          <mat-icon class="icon-size-4 mr-3 text-blue-600">edit</mat-icon>
+          <span class="text-sm">Güncelle</span>
+        </button>
+        <button mat-menu-item (click)="deleteById(company)" class="flex items-center">
+          <mat-icon class="icon-size-4 mr-3 text-red-600">delete</mat-icon>
+          <span class="text-sm">Sil</span>
+        </button>
+        <button mat-menu-item (click)="addUserToCompany(company)" class="flex items-center">
+          <mat-icon class="icon-size-4 mr-3 text-green-600">person_add</mat-icon>
+          <span class="text-sm">Şirkete Kullanıcı Ekle</span>
+        </button>
+        <button mat-menu-item (click)="viewCompanyUsers(company)" class="flex items-center">
+          <mat-icon class="icon-size-4 mr-3 text-purple-600" [svgIcon]="'heroicons_outline:user-group'"></mat-icon>
+          <span class="text-sm">Şirket Kullanıcılarını Görüntüle</span>
+        </button>
+        <button mat-menu-item (click)="openHospitalListDialog(company)" class="flex items-center">
+          <mat-icon class="icon-size-4 mr-3 text-cyan-600">local_hospital</mat-icon>
+          <span class="text-sm">Hastane Ekle</span>
+        </button>
+        <button mat-menu-item (click)="viewHospitalsModal(company)" class="flex items-center">
+          <mat-icon class="icon-size-4 mr-3 text-blue-600">visibility</mat-icon>
+          <span class="text-sm">Hastaneleri Görüntüle</span>
+        </button>
+      </ng-template>
+    </mat-menu>
+
+    <!-- Create Modal -->
+    <div *ngIf="showCreateModal"
+         class="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50 p-4"
+         style="z-index: 1000;">
+      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl border border-gray-200 relative max-h-[90vh] overflow-hidden flex flex-col"
+           style="z-index: 1001;">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center border-b px-6 sm:px-8 py-6 sticky top-0 bg-white rounded-t-3xl z-10 flex-shrink-0">
+          <h1 class="text-2xl font-bold text-gray-800">Şirket Ekleme Formu</h1>
+          <button mat-icon-button (click)="closeModal()" class="ml-4" aria-label="Kapat">
+            <mat-icon [svgIcon]="'heroicons_outline:x'"></mat-icon>
+          </button>
+        </div>
+        
+        <!-- Modal Body with Stepper -->
+        <div class="flex-1 overflow-y-auto">
+          <mat-stepper #stepper orientation="horizontal" linear class="p-4 sm:p-6" (selectionChange)="onStepChange($event)">
+            <!-- Step 1: Company Information -->
+            <mat-step [stepControl]="companyInfoForm" label="Şirket Bilgileri">
+              <form [formGroup]="companyInfoForm" class="space-y-4 py-4">
+                <div class="text-center mb-4">
+                  <h3 class="text-lg font-semibold text-gray-800 mb-1">Şirket Bilgileri</h3>
+                  <p class="text-sm text-gray-600">Şirketin temel bilgilerini giriniz</p>
+                </div>
+                  <!-- Company Name and Tax Number Fields - Side by Side -->
+                <div class="name-fields-container">
+                  <!-- Company Small Title Field -->
+                  <div class="name-field-wrapper">
+                    <mat-form-field appearance="fill" class="fuse-mat-dense" [subscriptSizing]="'dynamic'">
+                      <mat-label>Şirket Kısa Adı</mat-label>
+                      <input matInput 
+                             id="companySmallTitle" 
+                             type="text"
+                             formControlName="companySmallTitle" 
+                             placeholder="Şirket kısa adını giriniz" 
+                             maxlength="100"
+                             class="always-visible-placeholder">
+                      <mat-error *ngIf="companyInfoForm.get('companySmallTitle')?.hasError('required')">
+                        Şirket kısa adı zorunludur
+                      </mat-error>
+                      <mat-error *ngIf="companyInfoForm.get('companySmallTitle')?.hasError('minlength')">
+                        En az 2 karakter olmalıdır
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+
+                  <!-- Tax Number Field -->
+                  <div class="name-field-wrapper">
+                    <mat-form-field appearance="fill" class="fuse-mat-dense" [subscriptSizing]="'dynamic'">
+                      <mat-label>Vergi Numarası</mat-label>
+                      <input matInput 
+                             id="taxNo" 
+                             type="text"
+                             formControlName="taxNo" 
+                             placeholder="Vergi numarasını giriniz"
+                             maxlength="10" 
+                             class="always-visible-placeholder">
+                      <mat-error *ngIf="companyInfoForm.get('taxNo')?.hasError('required')">
+                        Vergi numarası zorunludur
+                      </mat-error>
+                      <mat-error *ngIf="companyInfoForm.get('taxNo')?.hasError('pattern')">
+                        Vergi numarası 10 haneli olmalıdır
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <!-- Company Full Title Field -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                  <mat-label>Şirket Tam Adı</mat-label>
+                  <input matInput 
+                         id="companyTitle" 
+                         type="text"
+                         formControlName="companyTitle" 
+                         placeholder="Şirket tam adını giriniz" 
+                         maxlength="200"
+                         class="always-visible-placeholder">
+                  <mat-error *ngIf="companyInfoForm.get('companyTitle')?.hasError('required')">
+                    Şirket tam adı zorunludur
+                  </mat-error>
+                  <mat-error *ngIf="companyInfoForm.get('companyTitle')?.hasError('minlength')">
+                    En az 2 karakter olmalıdır
+                  </mat-error>
+                </mat-form-field>
+
+                <!-- Tax Office Field -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                  <mat-label>Vergi Dairesi</mat-label>
+                  <input matInput 
+                         id="taxOffice" 
+                         type="text"
+                         formControlName="taxOffice" 
+                         placeholder="Vergi dairesini giriniz" 
+                         maxlength="100"
+                         class="always-visible-placeholder">
+                  <mat-error *ngIf="companyInfoForm.get('taxOffice')?.hasError('required')">
+                    Vergi dairesi zorunludur
+                  </mat-error>
+                  <mat-error *ngIf="companyInfoForm.get('taxOffice')?.hasError('minlength')">
+                    En az 2 karakter olmalıdır
+                  </mat-error>
+                </mat-form-field>                <!-- Address Field -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                  <mat-label>Adres</mat-label>
+                  <textarea matInput 
+                            id="address" 
+                            formControlName="address" 
+                            placeholder="Şirket adresini giriniz" 
+                            rows="3"
+                            maxlength="500"
+                            class="always-visible-placeholder"></textarea>
+                  <mat-error *ngIf="companyInfoForm.get('address')?.hasError('required')">
+                    Adres zorunludur
+                  </mat-error>
+                  <mat-error *ngIf="companyInfoForm.get('address')?.hasError('minlength')">
+                    En az 5 karakter olmalıdır
+                  </mat-error>
+                </mat-form-field>
+
+                <!-- City and District Fields - Side by Side -->
+                <div class="name-fields-container">
+                  <!-- City Field -->
+                  <div class="name-field-wrapper">
+                    <mat-form-field appearance="fill" class="fuse-mat-dense" [subscriptSizing]="'dynamic'">
+                      <mat-label>Şehir</mat-label>
+                      <input matInput 
+                             id="city" 
+                             type="text"
+                             formControlName="city" 
+                             placeholder="Şehir giriniz" 
+                             maxlength="50"
+                             class="always-visible-placeholder">
+                      <mat-error *ngIf="companyInfoForm.get('city')?.hasError('required')">
+                        Şehir zorunludur
+                      </mat-error>
+                      <mat-error *ngIf="companyInfoForm.get('city')?.hasError('minlength')">
+                        En az 2 karakter olmalıdır
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+
+                  <!-- District Field -->
+                  <div class="name-field-wrapper">
+                    <mat-form-field appearance="fill" class="fuse-mat-dense" [subscriptSizing]="'dynamic'">
+                      <mat-label>İlçe</mat-label>
+                      <input matInput 
+                             id="district" 
+                             type="text"
+                             formControlName="district" 
+                             placeholder="İlçe giriniz"
+                             maxlength="50" 
+                             class="always-visible-placeholder">
+                      <mat-error *ngIf="companyInfoForm.get('district')?.hasError('required')">
+                        İlçe zorunludur
+                      </mat-error>
+                      <mat-error *ngIf="companyInfoForm.get('district')?.hasError('minlength')">
+                        En az 2 karakter olmalıdır
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <!-- Web Site Field -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                  <mat-label>Web Sitesi</mat-label>
+                  <input matInput 
+                         id="webSite" 
+                         type="url"
+                         formControlName="webSite" 
+                         placeholder="https://www.orneksite.com" 
+                         maxlength="200"
+                         class="always-visible-placeholder">
+                </mat-form-field>
+
+                <div class="flex justify-end pt-2">
+                  <button mat-flat-button 
+                          matStepperNext 
+                          [color]="'accent'"
+                          [disabled]="companyInfoForm.invalid" 
+                          class="min-w-[120px] h-10 rounded-md">
+                    İletişim Bilgileri
+                    <mat-icon class="ml-2">arrow_forward</mat-icon>
+                  </button>
+                </div>
+              </form>
+            </mat-step>
+            
+            <!-- Step 2: Contact Information -->
+            <mat-step [stepControl]="contactInfoForm" label="İletişim Bilgileri">
+              <form [formGroup]="contactInfoForm" class="space-y-4 py-4">
+                <div class="text-center mb-4">
+                  <h3 class="text-lg font-semibold text-gray-800 mb-1">İletişim Bilgileri</h3>
+                  <p class="text-sm text-gray-600">İletişim bilgilerini giriniz</p>
+                </div>                <!-- Phone Field -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                  <mat-label>Telefon No</mat-label>
+                  <input matInput 
+                         id="phoneNumber" 
+                         type="tel"
+                         formControlName="phoneNumber" 
+                         placeholder="05551234567" 
+                         maxlength="15"
+                         class="always-visible-placeholder">
+                  <mat-error *ngIf="contactInfoForm.get('phoneNumber')?.hasError('required')">
+                    Telefon numarası zorunludur
+                  </mat-error>
+                  <mat-error *ngIf="contactInfoForm.get('phoneNumber')?.hasError('pattern')">
+                    Geçerli bir telefon numarası giriniz
+                  </mat-error>
+                </mat-form-field>
+
+                <!-- Email Field -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                  <mat-label>E-posta</mat-label>
+                  <input matInput 
+                         id="email" 
+                         type="email"
+                         formControlName="email" 
+                         placeholder="ornek@email.com" 
+                         maxlength="100"
+                         class="always-visible-placeholder">
+                  <mat-error *ngIf="contactInfoForm.get('email')?.hasError('email')">
+                    Geçerli bir e-posta adresi giriniz
+                  </mat-error>
+                </mat-form-field>
+
+                <!-- Contact Person Field -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                  <mat-label>Temsilci</mat-label>
+                  <input matInput 
+                         id="representative" 
+                         type="text"
+                         formControlName="representative" 
+                         placeholder="Temsilci adını giriniz" 
+                         maxlength="100"
+                         class="always-visible-placeholder">
+                  <mat-error *ngIf="contactInfoForm.get('representative')?.hasError('required')">
+                    Temsilci zorunludur
+                  </mat-error>
+                  <mat-error *ngIf="contactInfoForm.get('representative')?.hasError('minlength')">
+                    En az 2 karakter olmalıdır
+                  </mat-error>
+                </mat-form-field>                <!-- Company Type Field -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                  <mat-label>Şirket Tipi</mat-label>
+                  <mat-select formControlName="companyType" placeholder="Şirket tipini seçiniz">
+                    <mat-option value="1">Hospital</mat-option>
+                    <mat-option value="2">Other</mat-option>
+                    <mat-option value="3">RadiologyCenter</mat-option>
+                    <mat-option value="4">DiagnosticCenter</mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="contactInfoForm.get('companyType')?.hasError('required')">
+                    Şirket tipi zorunludur
+                  </mat-error>
+                </mat-form-field>
+
+                <!-- Company Status Field -->
+                <div class="flex items-center mb-4">
+                  <mat-checkbox formControlName="status" color="primary" class="mr-3">
+                    Şirket Aktif
+                  </mat-checkbox>
+                  <span class="text-sm text-gray-600">
+                    {{ contactInfoForm.get('status')?.value ? 'Şirket aktif olarak oluşturulacak' : 'Şirket pasif olarak oluşturulacak' }}
+                  </span>
+                </div>
+
+                <div class="flex justify-between pt-2">
+                  <button mat-stroked-button matStepperPrevious class="min-w-[120px] h-10 rounded-md">
+                    <mat-icon class="mr-2">arrow_back</mat-icon>
+                    Geri
+                  </button>
+                </div>
+              </form>
+            </mat-step>
+          </mat-stepper>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="border-t px-4 sm:px-6 py-3 bg-gray-50 rounded-b-3xl flex-shrink-0">
+          <!-- Alert Section -->
+          <div class="mb-3" *ngIf="showModalAlert">
+            <fuse-alert [appearance]="'outline'" 
+                        [showIcon]="false" 
+                        [type]="modalAlert?.type"
+                        [@shake]="modalAlert?.type === 'error'" 
+                        class="w-full">
+              {{modalAlert?.message}}
+            </fuse-alert>
+          </div>
+          <!-- Buttons Section -->
+          <div class="flex flex-col sm:flex-row justify-end items-center gap-3">
+            <button *ngIf="isLastStep" 
+                    type="button" 
+                    mat-flat-button 
+                    [color]="'warn'" 
+                    (click)="closeModal()"
+                    [disabled]="loading"
+                    class="w-full sm:w-auto min-w-[120px] h-10 rounded-md order-2 sm:order-1">
+              İptal
+            </button>
+            <button *ngIf="isLastStep" 
+                    type="button" 
+                    mat-flat-button 
+                    [color]="'primary'" 
+                    (click)="create()"
+                    class="w-full sm:w-auto min-w-[120px] h-10 rounded-md order-1 sm:order-2"
+                    [disabled]="loading || companyInfoForm.invalid || contactInfoForm.invalid">
+              <span *ngIf="!loading">Şirket Ekle</span>
+              <span *ngIf="loading" class="flex items-center gap-2">
+                <mat-progress-spinner [diameter]="16" [mode]="'indeterminate'" color="primary"></mat-progress-spinner>
+                Kaydediliyor...
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Update Modal -->
+    <div *ngIf="showUpdateModal"
+         class="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50 p-4"
+         style="z-index: 1000;">
+      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl border border-gray-200 relative max-h-[90vh] overflow-hidden flex flex-col"
+           style="z-index: 1001;">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center border-b px-6 sm:px-8 py-6 sticky top-0 bg-white rounded-t-3xl z-10 flex-shrink-0">
+          <h1 class="text-2xl font-bold text-gray-800">Şirket Güncelleme Formu</h1>
+          <button mat-icon-button (click)="closeModal()" class="ml-4" aria-label="Kapat">
+            <mat-icon [svgIcon]="'heroicons_outline:x'"></mat-icon>
+          </button>
+        </div>
+
+        <!-- Modal Body with Stepper -->
+        <div class="flex-1 overflow-y-auto">
+          <mat-stepper #updateStepper orientation="horizontal" linear class="p-4 sm:p-6" (selectionChange)="onStepChange($event)">
+            <!-- Step 1: Company Information -->
+            <mat-step [stepControl]="companyInfoForm" label="Şirket Bilgileri">
+              <form [formGroup]="companyInfoForm" class="space-y-4 py-4">
+                <div class="text-center mb-4">
+                  <h3 class="text-lg font-semibold text-gray-800 mb-1">Şirket Bilgileri</h3>
+                  <p class="text-sm text-gray-600">Şirketin temel bilgilerini güncelleyiniz</p>
+                </div>                <!-- Company Name and Tax Number Fields - Side by Side -->
+                <div class="name-fields-container">
+                  <!-- Company Small Title Field -->
+                  <div class="name-field-wrapper">
+                    <mat-form-field appearance="fill" class="fuse-mat-dense" [subscriptSizing]="'dynamic'">
+                      <mat-label>Şirket Kısa Adı</mat-label>
+                      <input matInput 
+                             id="updateCompanySmallTitle" 
+                             type="text"
+                             formControlName="companySmallTitle" 
+                             placeholder="Şirket kısa adını giriniz" 
+                             maxlength="100"
+                             class="always-visible-placeholder">
+                      <mat-error *ngIf="companyInfoForm.get('companySmallTitle')?.hasError('required')">
+                        Şirket kısa adı zorunludur
+                      </mat-error>
+                      <mat-error *ngIf="companyInfoForm.get('companySmallTitle')?.hasError('minlength')">
+                        En az 2 karakter olmalıdır
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+
+                  <!-- Tax Number Field -->
+                  <div class="name-field-wrapper">
+                    <mat-form-field appearance="fill" class="fuse-mat-dense" [subscriptSizing]="'dynamic'">
+                      <mat-label>Vergi Numarası</mat-label>
+                      <input matInput 
+                             id="updateTaxNo" 
+                             type="text"
+                             formControlName="taxNo" 
+                             placeholder="Vergi numarasını giriniz"
+                             maxlength="10" 
+                             class="always-visible-placeholder">
+                      <mat-error *ngIf="companyInfoForm.get('taxNo')?.hasError('required')">
+                        Vergi numarası zorunludur
+                      </mat-error>
+                      <mat-error *ngIf="companyInfoForm.get('taxNo')?.hasError('pattern')">
+                        Vergi numarası 10 haneli olmalıdır
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <!-- Company Full Title Field -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                  <mat-label>Şirket Tam Adı</mat-label>
+                  <input matInput 
+                         id="updateCompanyTitle" 
+                         type="text"
+                         formControlName="companyTitle" 
+                         placeholder="Şirket tam adını giriniz" 
+                         maxlength="200"
+                         class="always-visible-placeholder">
+                  <mat-error *ngIf="companyInfoForm.get('companyTitle')?.hasError('required')">
+                    Şirket tam adı zorunludur
+                  </mat-error>
+                  <mat-error *ngIf="companyInfoForm.get('companyTitle')?.hasError('minlength')">
+                    En az 2 karakter olmalıdır
+                  </mat-error>
+                </mat-form-field>
+
+                <!-- Tax Office Field -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                  <mat-label>Vergi Dairesi</mat-label>
+                  <input matInput 
+                         id="updateTaxOffice" 
+                         type="text"
+                         formControlName="taxOffice" 
+                         placeholder="Vergi dairesini giriniz" 
+                         maxlength="100"
+                         class="always-visible-placeholder">
+                  <mat-error *ngIf="companyInfoForm.get('taxOffice')?.hasError('required')">
+                    Vergi dairesi zorunludur
+                  </mat-error>
+                  <mat-error *ngIf="companyInfoForm.get('taxOffice')?.hasError('minlength')">
+                    En az 2 karakter olmalıdır
+                  </mat-error>
+                </mat-form-field>                <!-- Address Field -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                  <mat-label>Adres</mat-label>
+                  <textarea matInput 
+                            id="updateAddress" 
+                            formControlName="address" 
+                            placeholder="Şirket adresini giriniz" 
+                            rows="3"
+                            maxlength="500"
+                            class="always-visible-placeholder"></textarea>
+                  <mat-error *ngIf="companyInfoForm.get('address')?.hasError('required')">
+                    Adres zorunludur
+                  </mat-error>
+                  <mat-error *ngIf="companyInfoForm.get('address')?.hasError('minlength')">
+                    En az 5 karakter olmalıdır
+                  </mat-error>
+                </mat-form-field>
+
+                <!-- City and District Fields - Side by Side -->
+                <div class="name-fields-container">
+                  <!-- City Field -->
+                  <div class="name-field-wrapper">
+                    <mat-form-field appearance="fill" class="fuse-mat-dense" [subscriptSizing]="'dynamic'">
+                      <mat-label>Şehir</mat-label>
+                      <input matInput 
+                             id="updateCity" 
+                             type="text"
+                             formControlName="city" 
+                             placeholder="Şehir giriniz" 
+                             maxlength="50"
+                             class="always-visible-placeholder">
+                      <mat-error *ngIf="companyInfoForm.get('city')?.hasError('required')">
+                        Şehir zorunludur
+                      </mat-error>
+                      <mat-error *ngIf="companyInfoForm.get('city')?.hasError('minlength')">
+                        En az 2 karakter olmalıdır
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+
+                  <!-- District Field -->
+                  <div class="name-field-wrapper">
+                    <mat-form-field appearance="fill" class="fuse-mat-dense" [subscriptSizing]="'dynamic'">
+                      <mat-label>İlçe</mat-label>
+                      <input matInput 
+                             id="updateDistrict" 
+                             type="text"
+                             formControlName="district" 
+                             placeholder="İlçe giriniz"
+                             maxlength="50" 
+                             class="always-visible-placeholder">
+                      <mat-error *ngIf="companyInfoForm.get('district')?.hasError('required')">
+                        İlçe zorunludur
+                      </mat-error>
+                      <mat-error *ngIf="companyInfoForm.get('district')?.hasError('minlength')">
+                        En az 2 karakter olmalıdır
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <!-- Web Site Field -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                  <mat-label>Web Sitesi</mat-label>
+                  <input matInput 
+                         id="updateWebSite" 
+                         type="url"
+                         formControlName="webSite" 
+                         placeholder="https://www.orneksite.com" 
+                         maxlength="200"
+                         class="always-visible-placeholder">
+                </mat-form-field>
+
+                <div class="flex justify-end pt-2">
+                  <button mat-flat-button 
+                          matStepperNext 
+                          [color]="'accent'"
+                          [disabled]="companyInfoForm.invalid" 
+                          class="min-w-[120px] h-10 rounded-md">
+                    İletişim Bilgileri
+                    <mat-icon class="ml-2">arrow_forward</mat-icon>
+                  </button>
+                </div>
+              </form>
+            </mat-step>
+
+            <!-- Step 2: Contact Information -->
+            <mat-step [stepControl]="contactInfoForm" label="İletişim Bilgileri">
+              <form [formGroup]="contactInfoForm" class="space-y-4 py-4">
+                <div class="text-center mb-4">
+                  <h3 class="text-lg font-semibold text-gray-800 mb-1">İletişim Bilgileri</h3>
+                  <p class="text-sm text-gray-600">İletişim bilgilerini güncelleyiniz</p>
+                </div>                <!-- Phone Field -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                  <mat-label>Telefon No</mat-label>
+                  <input matInput 
+                         id="updatePhoneNumber" 
+                         type="tel"
+                         formControlName="phoneNumber" 
+                         placeholder="05551234567" 
+                         maxlength="15"
+                         class="always-visible-placeholder">
+                  <mat-error *ngIf="contactInfoForm.get('phoneNumber')?.hasError('required')">
+                    Telefon numarası zorunludur
+                  </mat-error>
+                  <mat-error *ngIf="contactInfoForm.get('phoneNumber')?.hasError('pattern')">
+                    Geçerli bir telefon numarası giriniz
+                  </mat-error>
+                </mat-form-field>
+
+                <!-- Email Field -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                  <mat-label>E-posta</mat-label>
+                  <input matInput 
+                         id="updateEmail" 
+                         type="email"
+                         formControlName="email" 
+                         placeholder="ornek@email.com" 
+                         maxlength="100"
+                         class="always-visible-placeholder">
+                  <mat-error *ngIf="contactInfoForm.get('email')?.hasError('email')">
+                    Geçerli bir e-posta adresi giriniz
+                  </mat-error>
+                </mat-form-field>
+
+                <!-- Contact Person Field -->
+                <mat-form-field appearance="fill" class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                  <mat-label>Temsilci</mat-label>
+                  <input matInput 
+                         id="updateRepresentative" 
+                         type="text"
+                         formControlName="representative" 
+                         placeholder="Temsilci adını giriniz" 
+                         maxlength="100"
+                         class="always-visible-placeholder">
+                  <mat-error *ngIf="contactInfoForm.get('representative')?.hasError('required')">
+                    Temsilci zorunludur
+                  </mat-error>
+                  <mat-error *ngIf="contactInfoForm.get('representative')?.hasError('minlength')">
+                    En az 2 karakter olmalıdır
+                  </mat-error>
+                </mat-form-field>
+
+                <!-- Company Type Field -->                <mat-form-field appearance="fill" class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                  <mat-label>Şirket Tipi</mat-label>
+                  <mat-select formControlName="companyType" placeholder="Şirket tipini seçiniz">
+                    <mat-option value="1">Hospital</mat-option>
+                    <mat-option value="2">Other</mat-option>
+                    <mat-option value="3">RadiologyCenter</mat-option>
+                    <mat-option value="4">DiagnosticCenter</mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="contactInfoForm.get('companyType')?.hasError('required')">
+                    Şirket tipi zorunludur
+                  </mat-error>
+                </mat-form-field>
+
+                <!-- Company Status Field -->
+                <div class="flex items-center mb-4">
+                  <mat-checkbox formControlName="status" color="primary" class="mr-3">
+                    Şirket Aktif
+                  </mat-checkbox>
+                  <span class="text-sm text-gray-600">
+                    {{ contactInfoForm.get('status')?.value ? 'Şirket aktif olarak güncellenecek' : 'Şirket pasif olarak güncellenecek' }}
+                  </span>
+                </div>
+
+                <div class="flex justify-between pt-2">
+                  <button mat-stroked-button matStepperPrevious class="min-w-[120px] h-10 rounded-md">
+                    <mat-icon class="mr-2">arrow_back</mat-icon>
+                    Geri
+                  </button>
+                </div>
+              </form>
+            </mat-step>
+          </mat-stepper>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="border-t px-4 sm:px-6 py-3 bg-gray-50 rounded-b-3xl flex-shrink-0">
+          <!-- Alert Section -->
+          <div class="mb-3" *ngIf="showModalAlert">
+            <fuse-alert [appearance]="'outline'" 
+                        [showIcon]="false" 
+                        [type]="modalAlert?.type"
+                        [@shake]="modalAlert?.type === 'error'" 
+                        class="w-full">
+              {{modalAlert?.message}}
+            </fuse-alert>
+          </div>
+          <!-- Buttons Section -->
+          <div class="flex flex-col sm:flex-row justify-end items-center gap-3">
+            <button *ngIf="isLastStep" 
+                    type="button" 
+                    mat-flat-button 
+                    [color]="'warn'" 
+                    (click)="closeModal()"
+                    [disabled]="loading"
+                    class="w-full sm:w-auto min-w-[120px] h-10 rounded-md order-2 sm:order-1">
+              İptal
+            </button>
+            <button *ngIf="isLastStep" 
+                    type="button" 
+                    mat-flat-button 
+                    [color]="'primary'" 
+                    (click)="update()"
+                    class="w-full sm:w-auto min-w-[120px] h-10 rounded-md order-1 sm:order-2"
+                    [disabled]="loading || !isUpdateFormValid()">
+              <span *ngIf="!loading">Şirket Güncelle</span>
+              <span *ngIf="loading" class="flex items-center gap-2">
+                <mat-progress-spinner [diameter]="16" [mode]="'indeterminate'" color="primary"></mat-progress-spinner>
+                Güncelleniyor...
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>    <!-- Hospital Add Modal -->
+    <div *ngIf="showHospitalAddModal" class="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50 p-4">
+      <div class="bg-white w-full h-full rounded-none shadow-none border-none relative overflow-hidden flex flex-col">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center border-b px-6 sm:px-8 py-6 sticky top-0 bg-white z-10 flex-shrink-0">
+          <h1 class="text-2xl font-bold text-gray-800">Hastane Ekle</h1>
+          <button mat-icon-button (click)="closeHospitalAddModal()" class="ml-4" aria-label="Kapat">
+            <mat-icon [svgIcon]="'heroicons_outline:x'"></mat-icon>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="flex-1 overflow-y-auto">
+          <!-- Content goes here -->
+        </div>
+      </div>
+    </div>  </div>
+</div>

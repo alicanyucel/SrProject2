@@ -1,0 +1,73 @@
+<h2 mat-dialog-title>Bölüm Düzenle</h2>
+<form [formGroup]="editForm" (ngSubmit)="onSave()" mat-dialog-content>
+  <div class="partition-edit-form-row">
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Partition ID</mat-label>
+      <input matInput formControlName="partitionId" disabled />
+    </mat-form-field>
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Company ID</mat-label>
+      <input matInput formControlName="companyId" disabled />
+    </mat-form-field>
+  </div>
+  <div class="partition-edit-form-row">
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Hospital ID</mat-label>
+      <input matInput formControlName="hospitalId" disabled />
+    </mat-form-field>
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Bölüm Adı</mat-label>
+      <input matInput formControlName="partitionName" required />
+    </mat-form-field>
+  </div>
+  <div class="partition-edit-form-row">
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Modalite</mat-label>
+      <input matInput formControlName="modality" required />
+    </mat-form-field>
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Bölüm Kodu</mat-label>
+      <input matInput formControlName="partitionCode" />
+    </mat-form-field>
+  </div>
+  <div class="partition-edit-form-row">
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Şirket Kodu</mat-label>
+      <input matInput formControlName="companyCode" />
+    </mat-form-field>
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Referans Anahtarı</mat-label>
+      <input matInput formControlName="referenceKey" />
+    </mat-form-field>
+  </div>
+  <div class="partition-edit-form-row">
+    <mat-checkbox formControlName="urgent">Acil mi?</mat-checkbox>
+    <mat-checkbox formControlName="isActive">Aktif mi?</mat-checkbox>
+  </div>
+</form>
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-stroked-button color="warn" (click)="onCancel()">
+    <mat-icon>close</mat-icon> İptal
+  </button>
+  <button mat-flat-button color="primary" [disabled]="!editForm.valid" (click)="onSave()">
+    <mat-icon>save</mat-icon> Kaydet
+  </button>
+</mat-dialog-actions>
+
+<style>
+.dialog-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+.dialog-actions button mat-icon {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.partition-edit-form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+</style>

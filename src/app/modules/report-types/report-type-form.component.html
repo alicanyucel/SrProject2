@@ -1,0 +1,20 @@
+<h2 mat-dialog-title>Rapor Tipi Ekle/Düzenle</h2>
+<form [formGroup]="form" (ngSubmit)="save()">
+  <mat-form-field appearance="fill" class="w-100">
+    <mat-label>Rapor Tipi İsmi</mat-label>
+    <input matInput formControlName="reportName" required />
+  </mat-form-field>
+  <mat-form-field appearance="fill" class="w-100">
+    <mat-label>Rapor Şekli (Modality)</mat-label>
+    <input matInput formControlName="modalityType" required />
+  </mat-form-field>
+  <mat-checkbox formControlName="emergency">Acil Durum</mat-checkbox>
+  <mat-form-field appearance="fill" class="w-100">
+    <mat-label>Şablon ID</mat-label>
+    <input matInput formControlName="templateId" required />
+  </mat-form-field>
+  <div class="actions">
+    <button mat-button type="button" (click)="close()">İptal</button>
+    <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">Kaydet</button>
+  </div>
+</form>

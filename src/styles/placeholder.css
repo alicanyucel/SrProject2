@@ -1,0 +1,25 @@
+/* Placeholder stilleri - her zaman görünür kalması için */
+
+/* Input placeholder */
+.always-visible-placeholder::placeholder,
+.mat-mdc-input-element::placeholder {
+    color: rgba(0, 0, 0, 0.6) !important;
+    opacity: 1 !important;
+}
+
+.always-visible-placeholder:focus::placeholder,
+.mat-mdc-input-element:focus::placeholder {
+    opacity: 1 !important;
+    color: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Select placeholder */
+.mat-mdc-select-placeholder {
+    color: rgba(0, 0, 0, 0.6) !important;
+    opacity: 1 !important;
+}
+
+/* Form field boş olduğunda da placeholder görünsün */
+.mat-mdc-form-field-empty .mat-mdc-input-element::placeholder {
+    opacity: 1 !important;
+}

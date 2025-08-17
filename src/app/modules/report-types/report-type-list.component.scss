@@ -1,0 +1,20 @@
+.report-type-list {
+  width: 100vw;
+  min-height: 100vh;
+  margin: 0;
+  background: #fff;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 2rem 3vw;
+
+  .filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: center;
+  }
+
+  table {
+    width: 100%;
+  }
+}

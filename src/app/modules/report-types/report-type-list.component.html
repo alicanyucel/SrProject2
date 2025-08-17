@@ -1,0 +1,71 @@
+<div class="report-type-list" style="background: #fff; border-radius: 12px; box-shadow: 0 2px 16px 0 rgba(0,0,0,0.06); padding: 24px 18px; color: #222; font-weight: 600;">
+  <h2 style="margin-bottom: 12px; font-size: 22px; font-weight: 700; color: #111; letter-spacing: 1px;">Rapor Sayfası</h2>
+  <div class="filters" style="display: flex; align-items: center; gap: 8px;">
+    <button mat-raised-button color="primary" (click)="openAddReportType()">Yeni Rapor Tipi</button>
+    <mat-form-field appearance="fill">
+      <mat-label>Rapor Şekli</mat-label>
+      <mat-select [(ngModel)]="selectedModality" (selectionChange)="loadReportTypes()">
+        <mat-option value="">Tümü</mat-option>
+        <mat-option *ngFor="let modality of modalities" [value]="modality">{{ modality }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Acil Durum</mat-label>
+      <mat-select [(ngModel)]="selectedEmergency" (selectionChange)="loadReportTypes()">
+        <mat-option value="">Tümü</mat-option>
+        <mat-option value="true">Acil</mat-option>
+        <mat-option value="false">Acil Değil</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" style="margin-left:12px; margin-top:auto; flex: 1 1 auto; min-width: 260px; max-width: 100%; vertical-align: bottom; display: flex; flex-direction: column; justify-content: flex-end;">
+      <mat-label style="margin-bottom:25px; margin-left: 2px; font-size: 13px;">Arama Yap</mat-label>
+      <input matInput placeholder="Ad, şekil..." [(ngModel)]="searchText" (ngModelChange)="onSearchReports()" style="height: 20px; font-size: 14px;">
+      <button *ngIf="searchText" matSuffix mat-icon-button aria-label="Temizle" (click)="searchText=''; onSearchReports();">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+  </div>
+  <table mat-table [dataSource]="paginatedReports" class="mat-elevation-z8">
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef> Adı </th>
+      <td mat-cell *matCellDef="let element">
+        <span *ngIf="element.reportName && element.reportName.length > 0; else noName">{{element.reportName}}</span>
+        <ng-template #noName><span style="color: #aaa;">(İsim Yok)</span></ng-template>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="emergency">
+      <th mat-header-cell *matHeaderCellDef> Acil Durum </th>
+      <td mat-cell *matCellDef="let element"> {{element.emergency ? 'Acil' : 'Acil Değil'}} </td>
+    </ng-container>
+    <ng-container matColumnDef="modality">
+      <th mat-header-cell *matHeaderCellDef> Rapor Şekli </th>
+      <td mat-cell *matCellDef="let element"> {{element.modalityType || '(Tanımsız)'}} </td>
+    </ng-container>
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef> İşlemler </th>
+      <td mat-cell *matCellDef="let element">
+        <button mat-icon-button [matMenuTriggerFor]="menu">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="onEdit(element)"><mat-icon>edit</mat-icon> Düzenle</button>
+          <button mat-menu-item (click)="onDelete(element)"><mat-icon>delete</mat-icon> Sil</button>
+        </mat-menu>
+      </td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="['name', 'emergency', 'modality', 'actions']"></tr>
+    <tr mat-row *matRowDef="let row; columns: ['name', 'emergency', 'modality', 'actions'];"></tr>
+  </table>
+  <!-- MatPaginator tablo altına, sayfa genişliğine tam oturacak şekilde -->
+  <div class="w-full mt-2">
+    <mat-paginator
+      [length]="reportTypes.length"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="pageSizeOptions"
+      (page)="onPageChange($event)"
+      [pageIndex]="currentPage"
+      aria-label="Raporlar Paginator"
+      style="width: 100%;">
+    </mat-paginator>
+  </div>
+</div>

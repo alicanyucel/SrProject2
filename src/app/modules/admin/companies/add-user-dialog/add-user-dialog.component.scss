@@ -1,0 +1,635 @@
+// Global dialog container overrides
+:host ::ng-deep .mat-mdc-dialog-container {
+  padding: 0 !important;
+  overflow: visible !important;
+  max-width: 95vw !important;
+  max-height: 95vh !important;
+}
+
+:host ::ng-deep .mat-mdc-dialog-surface {
+  border-radius: 16px !important;
+  overflow: visible !important;
+}
+
+.dialog-content {
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 0;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+
+  .dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 24px 16px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f8fafc;
+
+    .dialog-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: #1f2937;
+
+      .title-icon {
+        color: #059669;
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    .close-button {
+      width: 36px;
+      height: 36px;
+      
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  .company-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background: #f0f9ff;
+    border-bottom: 1px solid #e0f2fe;
+
+    .company-icon {
+      color: #0284c7;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .company-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .company-name {
+        font-weight: 600;
+        color: #0f172a;
+        font-size: 14px;
+      }
+
+      .company-subtitle {
+        font-size: 12px;
+        color: #64748b;
+      }
+    }
+  }
+
+  .user-form {
+    padding: 24px;
+
+    .search-section,
+    .form-section {
+      margin-bottom: 24px;
+
+      .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #374151;
+        margin: 0 0 16px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        &::before {
+          content: '';
+          width: 3px;
+          height: 16px;
+          background: #059669;
+          border-radius: 2px;
+        }
+      }
+    }    .search-container {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+
+      .search-field {
+        flex: 1;
+      }      .search-button {
+        height: 56px;
+        min-width: 120px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 22px; // Label yüksekliği kadar yukarı taşıma
+        flex-shrink: 0;
+        border-radius: 7px !important; // Tüm köşeleri yuvarla
+
+        mat-spinner {
+          margin-right: 4px;
+        }
+      }
+    }
+
+    .search-alert {
+      margin-top: 16px;
+    }    .full-width {
+      width: 100%;
+      margin-bottom: 16px;
+    }
+
+    .checkbox-section {
+      margin: 24px 0;
+
+      .active-checkbox {
+        font-size: 14px;
+        
+        // Enhance purple checkbox styling
+        :host ::ng-deep .mat-mdc-checkbox {
+          .mdc-checkbox__ripple {
+            color: var(--fuse-primary-500) !important;
+          }
+          
+          .mdc-checkbox__background {
+            border-color: var(--fuse-primary-500) !important;
+            
+            &::before {
+              background-color: var(--fuse-primary-500) !important;
+            }
+          }
+          
+          &.mdc-checkbox--checked .mdc-checkbox__background {
+            background-color: var(--fuse-primary-500) !important;
+            border-color: var(--fuse-primary-500) !important;
+          }
+          
+          &:hover .mdc-checkbox__background {
+            border-color: var(--fuse-primary-600) !important;
+          }
+          
+          &.mdc-checkbox--checked:hover .mdc-checkbox__background {
+            background-color: var(--fuse-primary-600) !important;
+          }
+        }
+        
+        // Purple hover and focus effects
+        :host ::ng-deep .mat-mdc-checkbox:hover:not(.mat-mdc-checkbox-disabled) {
+          .mdc-checkbox__ripple {
+            background-color: rgba(var(--fuse-primary-500-rgb), 0.04) !important;
+          }
+        }
+        
+        // Focus state styling
+        :host ::ng-deep .mat-mdc-checkbox.cdk-focused {
+          .mdc-checkbox__background {
+            border-color: var(--fuse-primary-600) !important;
+          }
+        }
+      }
+    }
+
+    .submit-alert {
+      margin: 16px 0;
+    }
+  }
+
+  .dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px 24px 24px;
+    border-top: 1px solid #e5e7eb;
+    background: #f8fafc;
+
+    .cancel-button {
+      min-width: 100px;
+    }
+
+    .submit-button {
+      min-width: 140px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      mat-spinner {
+        margin-right: 4px;
+      }
+    }
+  }
+}
+
+// Form field customizations - following application patterns
+:host ::ng-deep .mat-mdc-form-field {
+  width: 100% !important;
+  transition: none !important; // Geçiş animasyonlarını kaldır
+}
+
+:host ::ng-deep .mat-mdc-form-field .mat-mdc-floating-label {
+  transform-origin: left top !important;
+  transform: translateY(-50%) scale(0.75) !important;
+  transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+:host ::ng-deep .mat-mdc-form-field:not(.mat-mdc-form-field-has-icon-prefix) .mat-mdc-floating-label {
+  left: 16px !important;
+}
+
+:host ::ng-deep .mat-mdc-form-field.mat-focused .mat-mdc-floating-label,
+:host ::ng-deep .mat-mdc-form-field.mat-mdc-form-field-should-float .mat-mdc-floating-label {
+  transform: translateY(-106%) scale(0.75) !important;
+}
+
+// Tüm form field'lar için sabit boyut kontrolü
+:host ::ng-deep .mat-mdc-text-field-wrapper {
+  transition: none !important;
+  transform: none !important;
+}
+
+:host ::ng-deep .mat-mdc-form-field-infix {
+  transition: none !important;
+  transform: none !important;
+}
+
+:host ::ng-deep .mat-mdc-form-field input {
+  transition: none !important;
+  transform: none !important;
+}
+
+.name-fields-row {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  
+  .name-field {
+    flex: 1;
+    min-width: 0;
+    max-width: 50%;
+    width: 50% !important; // Sabit genişlik
+  }
+}
+
+// Form field sabit boyut kontrolü
+:host ::ng-deep .name-field .mat-mdc-form-field {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+:host ::ng-deep .name-field .mat-mdc-text-field-wrapper {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex: none !important;
+}
+
+:host ::ng-deep .name-field .mat-mdc-form-field-infix {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex: none !important;
+}
+
+:host ::ng-deep .name-field input {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex: none !important;
+}
+
+.contact-fields-row {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  
+  .contact-field {
+    flex: 1;
+    min-width: 0;
+    max-width: 50%;
+    width: 50% !important; // Sabit genişlik
+  }
+}
+
+// İletişim alanları için sabit boyut kontrolü
+:host ::ng-deep .contact-field .mat-mdc-form-field {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+:host ::ng-deep .contact-field .mat-mdc-text-field-wrapper {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex: none !important;
+}
+
+:host ::ng-deep .contact-field .mat-mdc-form-field-infix {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex: none !important;
+}
+
+:host ::ng-deep .contact-field input {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex: none !important;
+}
+
+.date-fields-row {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 20px; // Ad soyad inputlarından boşluk
+  margin-bottom: 16px;
+  
+  .date-field {
+    flex: 1;
+    min-width: 0;
+    max-width: 50%;
+    width: 50% !important; // Sabit genişlik
+  }
+}
+
+// Tarih alanları için sabit boyut kontrolü
+:host ::ng-deep .date-field .mat-mdc-form-field {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+:host ::ng-deep .date-field .mat-mdc-text-field-wrapper {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex: none !important;
+  position: relative !important;
+}
+
+:host ::ng-deep .date-field .mat-mdc-form-field-infix {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex: none !important;
+  overflow: visible !important;
+  position: relative !important;
+}
+
+:host ::ng-deep .date-field input {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex: none !important;
+}
+
+// Datepicker toggle düzeltmesi - Input içinde password toggle gibi konumlandır
+:host ::ng-deep .date-field .mat-mdc-form-field-icon-suffix {
+  position: absolute !important;
+  right: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 24px !important;
+  width: 24px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+:host ::ng-deep .date-field .mat-datepicker-toggle {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 24px !important;
+  height: 24px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+:host ::ng-deep .date-field .mat-datepicker-toggle .mat-mdc-icon-button {
+  width: 24px !important;
+  height: 24px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border-radius: 50% !important;
+  }
+}
+
+:host ::ng-deep .date-field .mat-datepicker-toggle-default-icon {
+  width: 20px !important;
+  height: 20px !important;
+  font-size: 20px !important;
+  line-height: 1 !important;
+  color: rgba(0, 0, 0, 0.6) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+// Input padding'ini ayarla - sağ tarafta ikon için yer bırak
+:host ::ng-deep .date-field .mat-mdc-form-field-infix {
+  padding-right: 44px !important; // İkon için yer bırak
+  overflow: visible !important;
+  position: relative !important;
+}
+
+:host ::ng-deep .date-field input {
+  padding-right: 0 !important; // Input'un kendi padding'i
+}
+
+// Form field container pozisyonlandırması
+:host ::ng-deep .date-field .mat-mdc-text-field-wrapper {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+// Alert customizations
+:host ::ng-deep .search-alert,
+:host ::ng-deep .submit-alert {
+  .fuse-alert-container {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .dialog-content {
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    max-height: none;    .user-form {
+      .name-fields-row,
+      .contact-fields-row,
+      .date-fields-row {
+        flex-direction: column;
+        gap: 12px;
+        
+        .name-field,
+        .contact-field,
+        .date-field {
+          max-width: 100%;
+        }
+      }
+
+      .search-container {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+
+        .search-button {
+          width: 100%;
+          margin-bottom: 0;
+          height: 48px;
+        }
+      }
+    }
+
+    .dialog-actions {
+      flex-direction: column-reverse;
+      gap: 8px;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+}
+
+// Enhanced responsive design for very small screens
+@media (max-width: 480px) {
+  :host ::ng-deep .mat-mdc-dialog-container {
+    margin: 8px !important;
+    max-width: calc(100vw - 16px) !important;
+    max-height: calc(100vh - 16px) !important;
+  }
+
+  .dialog-content {
+    max-width: 100%;
+    
+    .dialog-header {
+      padding: 16px;
+      
+      .dialog-title {
+        font-size: 18px;
+      }
+    }
+    
+    .company-info,
+    .user-form {
+      padding: 16px;
+    }
+    
+    .dialog-actions {
+      padding: 16px;
+      gap: 8px;
+      
+      .cancel-button,
+      .submit-button {
+        min-width: 80px;
+        padding: 0 12px;
+      }
+    }
+  }
+}
+
+/* User Already Exists Warning */
+.user-exists-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  margin-top: 16px;
+  
+  .warning-icon {
+    color: #f59e0b;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+  
+  .warning-text {
+    color: #92400e;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+/* Locked Input Styling */
+.locked-input {
+  background-color: #f3f4f6 !important;
+  color: #6b7280 !important;
+  cursor: not-allowed !important;
+}
+
+:host ::ng-deep .locked-input {
+  background-color: #f3f4f6 !important;
+  color: #6b7280 !important;
+  cursor: not-allowed !important;
+}
+
+/* Disabled form fields styling */
+:host ::ng-deep .mat-mdc-form-field.mat-form-field-disabled {
+  .mat-mdc-text-field-wrapper {
+    background-color: #f3f4f6 !important;
+  }
+  
+  .mat-mdc-input-element {
+    color: #6b7280 !important;
+    cursor: not-allowed !important;
+  }
+  
+  .mat-mdc-floating-label {
+    color: #9ca3af !important;
+  }
+}
+
+/* Disabled buttons styling */
+:host ::ng-deep .submit-button[disabled] {
+  background-color: #e5e7eb !important;
+  color: #9ca3af !important;
+  cursor: not-allowed !important;
+  
+  &:hover {
+    background-color: #e5e7eb !important;
+  }
+}
+
+/* Disabled checkbox styling */
+:host ::ng-deep .mat-mdc-checkbox.mat-mdc-checkbox-disabled {
+  .mdc-checkbox__native-control:disabled ~ .mdc-checkbox__background {
+    background-color: #e5e7eb !important;
+    border-color: #d1d5db !important;
+  }
+  
+  .mdc-checkbox__checkmark {
+    color: #9ca3af !important;
+  }
+}

@@ -1,0 +1,37 @@
+.w-100 {
+  width: 100%;
+}
+
+.hospital-partition-edit-dialog-panel .mat-mdc-dialog-container {
+  width: 90vw !important;
+  max-width: 900px !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04) !important;
+  padding: 0 !important;
+}
+
+.hospital-partition-edit-dialog-panel .mat-mdc-dialog-surface {
+  border-radius: 16px !important;
+}
+
+.hospital-partition-edit-dialog-panel form {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.partition-edit-form-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+.partition-edit-form-row .w-100 {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+@media (max-width: 700px) {
+  .partition-edit-form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+}

@@ -1,0 +1,182 @@
+<div class="flex flex-col flex-auto min-w-0">
+    <fuse-alert *ngIf="(fuseAlert.alert$ | async) as alert"
+        [type]="alert.type" [appearance]="'fill'" [dismissible]="true" (closed)="fuseAlert.clearAlert()" @shake
+        class="mb-4">
+        {{ alert.message }}
+    </fuse-alert>
+
+    <!-- Main -->
+    <div class="flex-auto p-6 sm:p-10">
+        <div class="h-400 min-h-400 max-h-400 rounded-2xl">            <!-- Tablo Başlığı -->
+            <div class="flex flex-col sm:flex-row sm:items-center mb-8 gap-4">
+                <div class="flex items-center gap-4 w-full sm:w-auto">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-0">Üyelik Başvuruları</h2>
+                    <button mat-flat-button [color]="'primary'" class="min-w-[140px] h-10 rounded-md ml-4"
+                        (click)="openSignUpForm()" aria-label="Yeni başvuru formu">
+                        <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                        <span class="ml-2">Başvuru Formu</span>
+                    </button>
+                    <mat-form-field appearance="fill" class="w-full sm:w-48 h-10 ml-2" [subscriptSizing]="'dynamic'">
+                        <mat-select [(value)]="statusFilter" (selectionChange)="onStatusFilterChange()" placeholder="Durum Filtresi">
+                            <mat-option value="">Tüm Durumlar</mat-option>
+                            <mat-option [value]="ApplicationStatus.Approved">Onaylandı</mat-option>
+                            <mat-option [value]="ApplicationStatus.Unapproved">Onay Bekliyor</mat-option>
+                            <mat-option [value]="ApplicationStatus.AdditionalInformationRequested">Ek Bilgi İstendi</mat-option>
+                            <mat-option [value]="ApplicationStatus.Rejected">Reddedildi</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <mat-form-field appearance="fill" class="w-full sm:w-64 h-10 ml-2" [subscriptSizing]="'dynamic'">
+                        <mat-icon matPrefix [svgIcon]="'heroicons_outline:search'"></mat-icon>
+                        <input matInput [(ngModel)]="search" (input)="onSearchChange()" type="search" placeholder="Başvuru ara..." aria-label="Arama">
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto rounded-2xl shadow-lg border border-gray-200 bg-white">
+                <div class="min-w-[1200px]">
+                    <table class="w-full bg-white rounded-2xl overflow-hidden text-sm applications-table">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="text-center px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">#</th>
+                                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Ad Soyad</th>
+                                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">E-posta</th>                                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Telefon</th>
+                                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">TC Kimlik No</th>
+                                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">İlgi Alanı</th>
+                                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Başvuru Tarihi</th>
+                                <th class="text-center px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Durum</th>
+                                <th class="text-center px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let application of paginatedApplications; let i = index"
+                                class="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
+                                
+                                <!-- Sıra No -->
+                                <td class="text-center px-3 py-4 text-gray-600">
+                                    {{ (pageIndex * pageSize) + i + 1 }}
+                                </td>
+                                
+                                <!-- Ad Soyad -->
+                                <td class="px-3 py-4">
+                                    <div class="flex flex-col">
+                                        <span class="font-medium text-gray-900">{{ application.fullName }}</span>
+                                        <span class="text-xs text-gray-500">{{ application.firstName }} {{ application.lastName }}</span>
+                                    </div>
+                                </td>
+                                
+                                <!-- E-posta -->
+                                <td class="px-3 py-4">
+                                    <span class="text-gray-700">{{ application.email }}</span>
+                                </td>
+                                  <!-- Telefon -->
+                                <td class="px-3 py-4">
+                                    <span class="text-gray-700">{{ application.phone }}</span>
+                                </td>
+                                
+                                <!-- TC Kimlik No -->
+                                <td class="px-3 py-4">
+                                    <span class="text-gray-700">{{ application.identityNumber }}</span>
+                                </td>
+                                  <!-- İlgi Alanı -->
+                                <td class="px-3 py-4">
+                                    <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ getInterestAreaClass(application.areaOfInterest) }}">
+                                        <mat-icon class="w-4 h-4 mr-2" [svgIcon]="getInterestAreaIcon(application.areaOfInterest)"></mat-icon>
+                                        {{ getInterestAreaLabel(application.areaOfInterest) }}
+                                    </div>
+                                </td>
+                                
+                                <!-- Başvuru Tarihi -->
+                                <td class="px-3 py-4">
+                                    <span class="text-gray-700">{{ formatDate(application.applicationDate) }}</span>
+                                </td>                                <!-- Durum -->
+                                <td class="text-center px-3 py-4">
+                                    <div class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium {{ getStatusClass(application.applicationStatus) }}"
+                                         [style.background-color]="getStatusBackgroundColor(application.applicationStatus)"
+                                         [style.color]="getStatusTextColor(application.applicationStatus)"
+                                         [style.border]="getStatusBorder(application.applicationStatus)">
+                                        <mat-icon class="w-4 h-4 mr-1" 
+                                                  [svgIcon]="getStatusIcon(application.applicationStatus)"
+                                                  [style.color]="getStatusIconColor(application.applicationStatus)"></mat-icon>
+                                        {{ getStatusLabel(application.applicationStatus) }}
+                                    </div>
+                                </td>
+                                
+                                <!-- İşlemler -->
+                                <td class="text-center px-3 py-4">
+                                    <div class="flex justify-center">
+                                        <button mat-icon-button
+                                            [matMenuTriggerFor]="actionMenu" [matMenuTriggerData]="{application: application}"
+                                            class="h-8 w-8 hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center"
+                                            title="İşlemler" aria-label="İşlemler">
+                                            <!-- 3 nokta ikonu -->
+                                            <div class="flex flex-col items-center justify-center space-y-0.5">
+                                                <div class="w-1 h-1 bg-gray-600 rounded-full"></div>
+                                                <div class="w-1 h-1 bg-gray-600 rounded-full"></div>
+                                                <div class="w-1 h-1 bg-gray-600 rounded-full"></div>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>                            <!-- Empty State Row -->
+                            <tr *ngIf="!isLoading && paginatedApplications.length === 0" class="border-b">
+                                <td colspan="9" class="text-center py-12">
+                                    <div class="flex flex-col items-center justify-center text-gray-500">
+                                        <mat-icon [svgIcon]="'heroicons_outline:document-text'"
+                                            class="icon-size-12 mb-4 text-gray-400"></mat-icon>
+                                        <h3 class="text-lg font-medium text-gray-700 mb-2">
+                                            {{ search && search.trim() !== '' ? 'Arama sonucu bulunamadı' : 'Henüz başvuru bulunmuyor' }}
+                                        </h3>
+                                        <p class="text-sm text-gray-500 max-w-md text-center">
+                                            {{ search && search.trim() !== '' ?
+                                            'Arama kriterlerinizi değiştirerek tekrar deneyin.' :
+                                            'Henüz hiç üyelik başvurusu yapılmamış.'
+                                            }}
+                                        </p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div *ngIf="isLoading" class="flex justify-center items-center py-8">
+                <mat-progress-spinner diameter="40" mode="indeterminate"></mat-progress-spinner>
+            </div>
+
+            <!-- Pagination -->
+            <div *ngIf="!isLoading && paginatedApplications.length > 0" class="mt-6">
+                <mat-paginator
+                    [length]="totalApplications"
+                    [pageSize]="pageSize"
+                    [pageIndex]="pageIndex"
+                    [pageSizeOptions]="[5, 10, 25, 50]"
+                    (page)="onPageChange($event)"
+                    [showFirstLastButtons]="true"
+                    class="rounded-lg border border-gray-200">
+                </mat-paginator>
+            </div>
+        </div>
+    </div>
+
+    <!-- Applications Actions Menu -->
+    <mat-menu #actionMenu="matMenu" class="applications-actions-menu">
+        <ng-template matMenuContent let-application="application">
+            <button mat-menu-item (click)="approveApplication(application)" class="flex items-center"
+                    *ngIf="application.applicationStatus !== ApplicationStatus.Approved">
+                <mat-icon class="icon-size-4 mr-3 text-green-600">check</mat-icon>
+                <span class="text-sm">Onayla</span>
+            </button>            <button mat-menu-item (click)="rejectApplication(application)" class="flex items-center"
+                    *ngIf="application.applicationStatus !== ApplicationStatus.Rejected">
+                <mat-icon class="icon-size-4 mr-3 text-red-600">close</mat-icon>
+                <span class="text-sm">Reddet</span>
+            </button>
+            <button mat-menu-item (click)="requestAdditionalInfo(application)" class="flex items-center"
+                    *ngIf="application.applicationStatus !== ApplicationStatus.AdditionalInformationRequested">
+                <mat-icon class="icon-size-4 mr-3 text-blue-600">help</mat-icon>
+                <span class="text-sm">Ek Bilgi İste</span>
+            </button>
+        </ng-template>
+    </mat-menu>
+</div>

@@ -1,0 +1,103 @@
+/* ----------------------------------------------------------------------------------------------------- */
+/*  @ Import/write your custom styles here.
+/*  @ Styles from this file will override 'vendors.scss' and Fuse's base styles.
+/* ----------------------------------------------------------------------------------------------------- */
+
+@import 'sweetalert-custom.scss';
+
+/* Edit User Dialog Panel Styles */
+.edit-user-dialog-panel {
+  .mat-mdc-dialog-container {
+    --mdc-dialog-container-color: white;
+    --mdc-dialog-supporting-text-color: #374151;
+    border-radius: 16px !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    overflow: visible !important;
+    
+    .mat-mdc-dialog-surface {
+      overflow: visible !important;
+      border-radius: 16px !important;
+      box-shadow: none !important;
+    }
+    
+    .mat-mdc-dialog-content {
+      overflow: visible !important;
+      max-height: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+  }
+}
+
+/* Remove scrollbars from dialog */
+.edit-user-dialog-panel .mat-mdc-dialog-content::-webkit-scrollbar {
+  display: none;
+}
+
+.edit-user-dialog-panel .mat-mdc-dialog-content {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Hospital Management Dialog Panel Styles */
+.hospital-management-dialog-panel {
+  .mat-mdc-dialog-container {
+    --mdc-dialog-container-color: white;
+    --mdc-dialog-supporting-text-color: #374151;
+    border-radius: 8px !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+    overflow: hidden !important;
+    width: 90vw !important;
+    height: 85vh !important;
+    max-width: 1000px !important;
+    max-height: 85vh !important;
+    margin: auto !important;
+    padding: 0 !important;
+    
+    .mat-mdc-dialog-surface {
+      overflow: hidden !important;
+      border-radius: 8px !important;
+      box-shadow: none !important;
+      width: 90vw !important;
+      height: 85vh !important;
+      max-width: 1000px !important;
+    }
+    
+    .mat-mdc-dialog-content {
+      overflow: hidden !important;
+      max-height: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+  }
+}
+
+/* Hospital Management Dialog Content Scrolling */
+.hospital-management-dialog-panel .mat-mdc-dialog-content::-webkit-scrollbar {
+  display: none;
+}
+
+.hospital-management-dialog-panel .mat-mdc-dialog-content {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Fullscreen Modal Backdrop */
+.cdk-overlay-pane.hospital-management-dialog-panel {
+  width: 90vw !important;
+  height: 85vh !important;
+  max-width: 1000px !important;
+  max-height: 85vh !important;
+  margin: auto !important;
+  padding: 0 !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  position: relative !important;
+}
+
+.cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
+  opacity: 0.5 !important;
+}
+

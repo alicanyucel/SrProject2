@@ -1,0 +1,250 @@
+// Member Applications Component Styles
+
+.member-applications-container {
+  .always-visible-placeholder {
+    &::placeholder {
+      color: rgba(0, 0, 0, 0.6) !important;
+      opacity: 1 !important;
+    }
+  }
+
+  // Table styles
+  table {
+    tr:hover {
+      background-color: rgba(59, 130, 246, 0.05);
+    }
+  }
+
+  // Status chip colors
+  .mat-mdc-chip {
+    &.mat-accent {
+      --mdc-chip-container-color: #10b981;
+      --mdc-chip-text-color: white;
+    }
+    
+    &.mat-warn {
+      --mdc-chip-container-color: #ef4444;
+      --mdc-chip-text-color: white;
+    }
+    
+    &.mat-primary {
+      --mdc-chip-container-color: #3b82f6;
+      --mdc-chip-text-color: white;
+    }
+  }
+
+  // Action button styles
+  .action-button {
+    min-width: 120px;
+    height: 36px;
+    border-radius: 6px;
+    font-weight: 500;
+    
+    &.approve-btn {
+      background-color: #10b981;
+      color: white;
+      
+      &:hover {
+        background-color: #059669;
+      }
+    }
+    
+    &.reject-btn {
+      background-color: #ef4444;
+      color: white;
+      
+      &:hover {
+        background-color: #dc2626;
+      }
+    }
+    
+    &.info-btn {
+      background-color: #3b82f6;
+      color: white;
+      
+      &:hover {
+        background-color: #2563eb;
+      }
+    }
+  }
+}
+
+// Custom scrollbar for table
+.overflow-x-auto {
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+    
+    &:hover {
+      background: #94a3b8;
+    }
+  }
+}
+
+// Loading and empty state styles
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  
+  .empty-icon {
+    font-size: 4rem;
+    color: #9ca3af;
+    margin-bottom: 1rem;
+  }
+  
+  .empty-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+  }
+  
+  .empty-description {
+    color: #9ca3af;
+  }
+}
+
+// Status chip styles - Her duruma özel renkler (Güçlü selectors)
+:host ::ng-deep .status-chip-approved,
+.status-chip-approved {
+  background-color: #dcfce7 !important; // Açık yeşil
+  color: #166534 !important;            // Koyu yeşil
+  border: 1px solid #bbf7d0 !important;
+}
+
+:host ::ng-deep .status-chip-unapproved,
+.status-chip-unapproved {
+  background-color: #fef3c7 !important; // Açık sarı
+  color: #92400e !important;            // Koyu sarı/turuncu
+  border: 1px solid #fde68a !important;
+}
+
+:host ::ng-deep .status-chip-additional-info,
+.status-chip-additional-info {
+  background-color: #dbeafe !important; // Açık mavi
+  color: #1e40af !important;            // Koyu mavi
+  border: 1px solid #bfdbfe !important;
+}
+
+:host ::ng-deep .status-chip-rejected,
+.status-chip-rejected {
+  background-color: #fee2e2 !important; // Açık kırmızı
+  color: #991b1b !important;            // Koyu kırmızı
+  border: 1px solid #fecaca !important;
+}
+
+// Status icon colors (Güçlü selectors)
+:host ::ng-deep .status-chip-approved mat-icon,
+.status-chip-approved mat-icon {
+  color: #166534 !important; // Yeşil
+}
+
+:host ::ng-deep .status-chip-unapproved mat-icon,
+.status-chip-unapproved mat-icon {
+  color: #92400e !important; // Turuncu/sarı
+}
+
+:host ::ng-deep .status-chip-additional-info mat-icon,
+.status-chip-additional-info mat-icon {
+  color: #1e40af !important; // Mavi
+}
+
+:host ::ng-deep .status-chip-rejected mat-icon,
+.status-chip-rejected mat-icon {
+  color: #991b1b !important; // Kırmızı
+}
+
+// Status chip container styles - Table içindeki durumlar için
+.applications-table {
+  .status-chip-approved,
+  .status-chip-unapproved,
+  .status-chip-additional-info,
+  .status-chip-rejected {
+    border-radius: 9999px; // rounded-full
+    font-size: 0.75rem;    // text-xs
+    font-weight: 500;      // font-medium
+    padding: 0.25rem 0.75rem; // px-3 py-1
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+    // Kırmızı arkaplan için ekstra güçlü selector
+  .status-chip-rejected {
+    background-color: #fee2e2 !important; 
+    color: #991b1b !important;
+    border: 2px solid #ef4444 !important; // Daha kalın border debug için
+    
+    mat-icon {
+      color: #991b1b !important;
+    }
+  }
+}
+
+// Global status chip override - En güçlü selector
+:host {
+  .status-chip-rejected {
+    background: #fee2e2 !important; 
+    background-color: #fee2e2 !important; 
+    color: #991b1b !important;
+    border: 2px solid #ef4444 !important;
+  }
+}
+
+// Component içi - CSS Specificity için
+.member-applications-container {
+  .status-chip-rejected {
+    background: #fee2e2 !important; 
+    background-color: #fee2e2 !important; 
+    color: #991b1b !important;
+    border: 2px solid #ef4444 !important;
+  }
+}
+
+// Ultra güçlü selector - Tüm olası durumlar için
+:host ::ng-deep .status-chip-rejected,
+:host .status-chip-rejected,
+.status-chip-rejected,
+div.status-chip-rejected,
+.inline-flex.status-chip-rejected {
+  background: #fee2e2 !important; 
+  background-color: #fee2e2 !important; 
+  color: #991b1b !important;
+  border: 2px solid #ef4444 !important;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .member-applications-container {
+    .table-container {
+      padding: 0.5rem;
+    }
+    
+    table {
+      font-size: 0.75rem;
+      
+      th, td {
+        padding: 0.5rem !important;
+      }
+    }
+  }
+}

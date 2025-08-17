@@ -1,0 +1,30 @@
+/* Select Component Placeholder Styles */
+.mat-mdc-select-placeholder {
+  color: rgba(0, 0, 0, 0.6) !important;
+  opacity: 1 !important;
+  display: block !important; 
+}
+
+/* Ensure placeholder is visible even when something is selected */
+.mat-mdc-select-value {
+  position: relative;
+}
+
+.mat-mdc-select-value-text {
+  display: inline-block;
+}
+
+/* Make sure the role selector doesn't hide the placeholder */
+#roleId + .mat-mdc-select-placeholder {
+  visibility: visible !important;
+}
+
+/* Fix for select component displaying placeholder */
+.mat-mdc-form-field-has-value .mat-mdc-select .mat-mdc-select-placeholder {
+  display: none;
+}
+
+/* Ensure placeholder is visible when focused but empty */
+.mat-mdc-form-field-focused:not(.mat-mdc-form-field-has-value) .mat-mdc-select .mat-mdc-select-placeholder {
+  opacity: 1 !important;
+}

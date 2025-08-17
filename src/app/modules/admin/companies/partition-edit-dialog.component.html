@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>Partition Düzenle</h2>
+<form [formGroup]="partitionForm" (ngSubmit)="onSave()" mat-dialog-content>
+  <mat-form-field appearance="fill" class="w-100">
+    <mat-label>Partition Adı</mat-label>
+    <input matInput formControlName="partitionName" required />
+  </mat-form-field>
+  <mat-form-field appearance="fill" class="w-100">
+    <mat-label>Modality</mat-label>
+    <input matInput formControlName="modality" required />
+  </mat-form-field>
+</form>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">İptal</button>
+  <button mat-flat-button color="primary" [disabled]="!partitionForm.valid" (click)="onSave()">Kaydet</button>
+</mat-dialog-actions>

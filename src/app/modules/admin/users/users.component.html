@@ -1,0 +1,639 @@
+<div class="flex flex-col flex-auto min-w-0"> <fuse-alert *ngIf="(fuseAlert.alert$ | async) as alert"
+        [type]="alert.type" [appearance]="'fill'" [dismissible]="true" (closed)="fuseAlert.clearAlert()" @shake
+        class="mb-4">
+        {{ alert.message }}
+    </fuse-alert>
+    <!-- Main -->
+    <div class="flex-auto p-6 sm:p-10">
+        <div class="h-400 min-h-400 max-h-400 rounded-2xl"> <!-- Tablo Başlığı -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+                <h2 class="text-3xl font-bold text-gray-800">Kullanıcı Listesi</h2>
+                <div class="flex flex-col sm:flex-row sm:items-end gap-4 w-full">
+                    <button mat-flat-button [color]="'primary'" class="min-w-[140px] h-10 rounded-md common-btn flex items-center justify-center"
+                        (click)="onOpenCreateModal()" aria-label="Yeni kullanıcı ekle">
+                        <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                        <span class="ml-2">Kullanıcı Ekle</span>
+                    </button>
+                    <mat-form-field appearance="fill" class="fuse-mat-dense w-40 common-input pt-6" [subscriptSizing]="'dynamic'">
+                        <mat-icon matPrefix [svgIcon]="'heroicons_outline:search'"></mat-icon>
+                        <input matInput [(ngModel)]="search" (input)="onSearchChange()" type="search"
+                            placeholder="Kullanıcı ara..." aria-label="Arama" class="always-visible-placeholder">
+                    </mat-form-field>
+                    <!-- Durum Filtresi -->
+                    <mat-form-field appearance="fill" class="fuse-mat-dense w-40 common-input" [subscriptSizing]="'dynamic'">
+                        <mat-label>Durum</mat-label>
+                        <mat-select [(ngModel)]="statusFilter" (selectionChange)="onStatusFilterChange()">
+                            <mat-option value="">Tümü</mat-option>
+                            <mat-option value="true">Aktif</mat-option>
+                            <mat-option value="false">Pasif</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <!-- Rol Filtresi -->
+                    <mat-form-field appearance="fill" class="fuse-mat-dense w-40 common-input" [subscriptSizing]="'dynamic'">
+                        <mat-label>Rol</mat-label>
+                        <mat-select [(ngModel)]="roleFilter" (selectionChange)="onRoleFilterChange()">
+                            <mat-option value="">Tümü</mat-option>
+                            <mat-option *ngFor="let role of roleList" [value]="role.id">{{ role.name }}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <!-- Firma Filtresi -->
+                    <mat-form-field appearance="fill" class="fuse-mat-dense w-40 common-input" [subscriptSizing]="'dynamic'">
+                        <mat-label>Firma</mat-label>
+                        <mat-select [(ngModel)]="companyFilter" (selectionChange)="onCompanyFilterChange()">
+                            <mat-option value="">Tümü</mat-option>
+                            <mat-option *ngFor="let company of companyList" [value]="company.id">{{ company.name }}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+            <div class="overflow-x-auto rounded-2xl shadow-lg border border-gray-200 bg-white">
+                <div class="min-w-[1400px]"> <!-- Minimum width to ensure proper table layout -->
+                    <table class="w-full bg-white rounded-2xl overflow-hidden text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="text-center px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">#</th>
+                                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Id</th>
+                                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Giriş ID</th>
+                                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Kullanıcı Kodu</th>
+                                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Ad</th>
+                                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Soyad</th>
+                                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">E-posta</th>
+                                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Telefon</th>
+                                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">TC Kimlik No</th>
+                                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Rol</th>
+                                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Oluşt. Tarihi</th>
+                                <th class="px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Güncel. Tarihi</th>
+                                <th class="text-center px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">Durum
+                                </th>
+                                <th class="text-center px-3 py-4 font-semibold text-gray-700 whitespace-nowrap">İşlemler
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let user of paginatedUsers; let i = index"
+                                class="border-b last:border-0 hover:bg-primary-50 transition min-h-[56px]">
+                                <td class="text-center font-bold text-gray-600 px-3 py-3 align-middle">{{ (pageIndex *
+                                    pageSize) + i + 1 }}</td>
+                                <td class="px-3 py-3 text-gray-800 align-middle font-mono text-xs">{{ user.id ||
+                                    '-' }}</td>
+                                <td class="px-3 py-3 text-gray-800 align-middle font-mono text-xs">{{ user.loginId ||
+                                    '-'
+                                    }}</td>
+                                <td class="px-3 py-3 text-gray-800 align-middle font-mono text-xs">{{ user.userCode ||
+                                    '-'
+                                    }}</td>
+                                <td class="px-3 py-3 text-gray-800 align-middle">{{ user.firstName }}</td>
+                                <td class="px-3 py-3 text-gray-800 align-middle">{{ user.lastName }}</td>
+                                <td class="px-3 py-3 text-gray-800 align-middle">{{ user.email }}</td>
+                                <td class="px-3 py-3 text-gray-800 align-middle">{{ user.phone || user.phoneNumber ||
+                                    '-' }}</td>
+                                <td class="px-3 py-3 text-gray-800 align-middle">{{ user.identityNumber || '-' }}</td>
+                                <td class="px-3 py-3 text-gray-800 align-middle">
+                                    <span *ngIf="user.userRoles && user.userRoles.length > 0; else noRole"
+                                        class="text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                                        {{ user.userRoles[0].roleName }}
+                                    </span>
+                                    <ng-template #noRole>
+                                        <span
+                                            class="text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-800">
+                                            Rol Atanmamış
+                                        </span>
+                                    </ng-template>
+                                </td>
+                                <td class="px-3 py-3 text-gray-800 align-middle text-xs">
+                                    {{ user.createdAt | date:'dd.MM.yyyy HH:mm' }}
+                                </td>
+                                <td class="px-3 py-3 text-gray-800 align-middle text-xs">
+                                    {{ user.updatedAt | date:'dd.MM.yyyy HH:mm' }}
+                                </td>
+                                <td class="text-center px-3 py-3 align-middle">
+                                    <span
+                                        [class]="user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                                        class="text-xs font-medium px-2 py-1 rounded-full">
+                                        {{ user.isActive ? 'Aktif' : 'Pasif' }}
+                                    </span>
+                                </td>
+                                <td class="text-center px-3 py-3 align-middle">
+                                    <div class="flex justify-center items-center"> <button mat-icon-button
+                                            [matMenuTriggerFor]="actionMenu" [matMenuTriggerData]="{user: user}"
+                                            class="h-8 w-8 hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center"
+                                            title="İşlemler" aria-label="İşlemler">
+                                            <!-- 3 nokta ikonu -->
+                                            <div class="flex flex-col items-center justify-center space-y-0.5">
+                                                <div class="w-1 h-1 bg-gray-600 rounded-full"></div>
+                                                <div class="w-1 h-1 bg-gray-600 rounded-full"></div>
+                                                <div class="w-1 h-1 bg-gray-600 rounded-full"></div>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr><!-- Empty State Row -->
+                            <tr *ngIf="paginatedUsers.length === 0" class="border-b">
+                                <td colspan="14" class="text-center py-12">
+                                    <div class="flex flex-col items-center justify-center text-gray-500">
+                                        <mat-icon [svgIcon]="'heroicons_outline:users'"
+                                            class="icon-size-12 mb-4 text-gray-400"></mat-icon>
+                                        <h3 class="text-lg font-medium text-gray-700 mb-2">
+                                            {{ search && search.trim() !== '' ? 'Arama sonucu bulunamadı' : 'Henüz
+                                            kullanıcı bulunmuyor' }}
+                                        </h3>
+                                        <p class="text-sm text-gray-500 max-w-md">
+                                            {{ search && search.trim() !== '' ?
+                                            'Arama kriterlerinizi değiştirerek tekrar deneyin.' :
+                                            'Yeni kullanıcı eklemek için yukarıdaki "Kullanıcı Ekle" butonunu kullanın.'
+                                            }}
+                                        </p>
+                                        <button *ngIf="!search || search.trim() === ''" mat-flat-button
+                                            [color]="'primary'" (click)="onOpenCreateModal()"
+                                            class="mt-4 min-w-[140px] h-10 rounded-md">
+                                            <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                                            <span class="ml-2">Kullanıcı Ekle</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div> <mat-paginator *ngIf="filteredUsers.length > 0" [length]="filteredUsers.length"
+                    [pageSize]="pageSize" [pageIndex]="pageIndex" [pageSizeOptions]="[5, 10, 20]"
+                    (page)="onPageChange($event)" [showFirstLastButtons]="true">
+                </mat-paginator>
+            </div>
+        </div>
+
+        <!-- User Actions Menu -->
+        <mat-menu #actionMenu="matMenu" class="user-actions-menu">
+            <ng-template matMenuContent let-user="user">
+                <button mat-menu-item (click)="editUser(user)" class="flex items-center">
+                    <mat-icon class="icon-size-4 mr-3 text-blue-600">edit</mat-icon>
+                    <span class="text-sm">Güncelle</span>
+                </button>
+                <button mat-menu-item (click)="deleteById(user)" class="flex items-center">
+                    <mat-icon class="icon-size-4 mr-3 text-red-600">delete</mat-icon>
+                    <span class="text-sm">Sil</span>
+                </button>
+            </ng-template>
+        </mat-menu>
+
+        <!-- Create Modal -->
+        <div *ngIf="showCreateModal"
+            class="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50 p-4"
+            style="z-index: 1000;">
+            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl border border-gray-200 relative max-h-[90vh] overflow-hidden flex flex-col"
+                style="z-index: 1001;">
+                <!-- Modal Header -->
+                <div
+                    class="flex justify-between items-center border-b px-6 sm:px-8 py-6 sticky top-0 bg-white rounded-t-3xl z-10 flex-shrink-0">
+                    <h1 class="text-2xl font-bold text-gray-800">Kullanıcı Ekleme Formu</h1>
+                    <button mat-icon-button (click)="closeModal()" class="ml-4" aria-label="Kapat">
+                        <mat-icon [svgIcon]="'heroicons_outline:x'"></mat-icon>
+                    </button>
+                </div> <!-- Modal Body with Stepper -->
+                <div class="flex-1 overflow-y-auto">
+                    <mat-stepper #stepper orientation="horizontal" linear class="p-4 sm:p-6"
+                        (selectionChange)="onStepChange($event)">
+                        <!-- Step 1: Personal Information -->
+                        <mat-step [stepControl]="personalInfoForm" label="Kişisel Bilgiler">
+                            <form [formGroup]="personalInfoForm" class="space-y-4 py-4">
+                                <div class="text-center mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-1">Kişisel Bilgiler</h3>
+                                    <p class="text-sm text-gray-600">Kullanıcının temel bilgilerini giriniz</p>
+                                </div> <!-- First Name and Last Name Fields - Side by Side -->
+                                <div class="name-fields-container">
+                                    <!-- First Name Field -->
+                                    <div class="name-field-wrapper"> <mat-form-field appearance="fill"
+                                            class="fuse-mat-dense" [subscriptSizing]="'dynamic'">
+                                            <mat-label>Ad</mat-label> <input matInput id="firstName" type="text"
+                                                formControlName="firstName" placeholder="Adınızı giriniz" maxlength="50"
+                                                autocomplete="given-name" class="always-visible-placeholder">
+                                            <mat-error *ngIf="personalInfoForm.get('firstName')?.hasError('required')">
+                                                Ad zorunludur
+                                            </mat-error>
+                                            <mat-error *ngIf="personalInfoForm.get('firstName')?.hasError('minlength')">
+                                                En az 2 karakter olmalıdır
+                                            </mat-error>
+                                        </mat-form-field>
+                                    </div>
+
+                                    <!-- Last Name Field -->
+                                    <div class="name-field-wrapper"> <mat-form-field appearance="fill"
+                                            class="fuse-mat-dense" [subscriptSizing]="'dynamic'">
+                                            <mat-label>Soyad</mat-label> <input matInput id="lastName" type="text"
+                                                formControlName="lastName" placeholder="Soyadınızı giriniz"
+                                                maxlength="50" autocomplete="family-name"
+                                                class="always-visible-placeholder">
+                                            <mat-error *ngIf="personalInfoForm.get('lastName')?.hasError('required')">
+                                                Soyad zorunludur
+                                            </mat-error>
+                                            <mat-error *ngIf="personalInfoForm.get('lastName')?.hasError('minlength')">
+                                                En az 2 karakter olmalıdır
+                                            </mat-error>
+                                        </mat-form-field>
+                                    </div>
+                                </div>
+
+                                <!-- Email Field -->
+                                <mat-form-field appearance="fill" class="fuse-mat-dense w-full"
+                                    [subscriptSizing]="'dynamic'">
+                                    <mat-label>E-posta</mat-label> <input matInput id="email" type="email"
+                                        formControlName="email" placeholder="ornek@email.com" maxlength="100"
+                                        autocomplete="email" class="always-visible-placeholder">
+                                    <mat-error *ngIf="personalInfoForm.get('email')?.hasError('required')">
+                                        E-posta zorunludur
+                                    </mat-error>
+                                    <mat-error *ngIf="personalInfoForm.get('email')?.hasError('email')">
+                                        Geçerli bir e-posta adresi giriniz
+                                    </mat-error>
+                                </mat-form-field> <!-- Phone Field --> <mat-form-field appearance="fill"
+                                    class="fuse-mat-dense w-full" [subscriptSizing]="'dynamic'">
+                                    <mat-label>Telefon No</mat-label> <input matInput id="phoneNumber" type="tel"
+                                        formControlName="phoneNumber" placeholder="05551234567" maxlength="11"
+                                        minlength="11" autocomplete="tel" class="always-visible-placeholder">
+                                    <mat-error *ngIf="personalInfoForm.get('phoneNumber')?.hasError('required')">
+                                        Telefon numarası zorunludur
+                                    </mat-error>
+                                    <mat-error *ngIf="personalInfoForm.get('phoneNumber')?.hasError('pattern')">
+                                        Geçerli bir telefon numarası giriniz
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <!-- Identity Number Field -->
+                                <mat-form-field appearance="fill" class="fuse-mat-dense w-full"
+                                    [subscriptSizing]="'dynamic'">
+                                    <mat-label>TC Kimlik No</mat-label>
+                                    <input matInput id="identityNumber" type="text" formControlName="identityNumber"
+                                        placeholder="12345678901" maxlength="11" minlength="11"
+                                        class="always-visible-placeholder">
+                                    <mat-error *ngIf="personalInfoForm.get('identityNumber')?.hasError('required')">
+                                        TC Kimlik numarası zorunludur
+                                    </mat-error>
+                                    <mat-error *ngIf="personalInfoForm.get('identityNumber')?.hasError('pattern')">
+                                        TC Kimlik numarası 11 haneli olmalıdır
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <!-- User Role Field --> <mat-form-field appearance="fill" class="fuse-mat-dense w-full"
+                                    [subscriptSizing]="'dynamic'">
+                                    <mat-label>Kullanıcı Rolü</mat-label>
+                                    <mat-select id="roleId" formControlName="roleId" placeholder="Rol seçiniz"
+                                        class="always-visible-placeholder">
+                                        <mat-option [value]="1">Admin</mat-option>
+                                        <mat-option [value]="2">System</mat-option>
+                                        <mat-option [value]="3">Doctor</mat-option>
+                                        <mat-option [value]="4">Reporter</mat-option>
+                                        <mat-option [value]="5">Company</mat-option>
+                                        <mat-option [value]="6">Hospital</mat-option>
+                                    </mat-select>
+                                    <mat-error *ngIf="personalInfoForm.get('roleId')?.hasError('required')">
+                                        Kullanıcı rolü zorunludur
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <div class="flex justify-end pt-2">
+                                    <button mat-flat-button matStepperNext [color]="'accent'"
+                                        [disabled]="personalInfoForm.invalid" class="min-w-[120px] h-10 rounded-md">
+                                        Giriş Bilgileri
+                                        <mat-icon class="ml-2">arrow_forward</mat-icon>
+                                    </button>
+                                </div>
+                            </form>
+                        </mat-step> <!-- Step 2: Login Information -->
+                        <mat-step [stepControl]="loginInfoForm" label="Giriş Bilgileri">
+                            <form [formGroup]="loginInfoForm" class="space-y-4 py-4">
+                                <div class="text-center mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-1">Giriş Bilgileri</h3>
+                                    <p class="text-sm text-gray-600">Şifre bilgilerini giriniz</p>
+                                </div>
+
+                                <!-- Password Field -->
+                                <mat-form-field appearance="fill" class="fuse-mat-dense w-full"
+                                    [subscriptSizing]="'dynamic'">
+                                    <mat-label>Şifre</mat-label> <input matInput id="password"
+                                        [type]="showPassword ? 'text' : 'password'" formControlName="password"
+                                        placeholder="Şifrenizi giriniz" maxlength="50" autocomplete="new-password"
+                                        class="always-visible-placeholder">
+                                    <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()"
+                                        [attr.aria-label]="'Şifreyi ' + (showPassword ? 'gizle' : 'göster')"
+                                        [attr.aria-pressed]="showPassword">
+                                        <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+                                    </button>
+                                    <mat-error *ngIf="loginInfoForm.get('password')?.hasError('required')">
+                                        Şifre zorunludur
+                                    </mat-error>
+                                    <mat-error *ngIf="loginInfoForm.get('password')?.hasError('minlength')">
+                                        En az 6 karakter olmalıdır
+                                    </mat-error>
+                                    <mat-error *ngIf="loginInfoForm.get('password')?.hasError('pattern')">
+                                        Şifre en az bir büyük harf, bir küçük harf ve bir rakam içermelidir
+                                    </mat-error>
+                                </mat-form-field> <!-- Confirm Password Field -->
+                                <mat-form-field appearance="fill" class="fuse-mat-dense w-full"
+                                    [subscriptSizing]="'dynamic'">
+                                    <mat-label>Şifre Tekrarı</mat-label> <input matInput id="repassword"
+                                        [type]="showConfirmPassword ? 'text' : 'password'" formControlName="repassword"
+                                        placeholder="Şifrenizi tekrar giriniz" maxlength="50"
+                                        autocomplete="new-password" class="always-visible-placeholder">
+                                    <button mat-icon-button matSuffix type="button"
+                                        (click)="toggleConfirmPasswordVisibility()"
+                                        [attr.aria-label]="'Şifreyi ' + (showConfirmPassword ? 'gizle' : 'göster')"
+                                        [attr.aria-pressed]="showConfirmPassword">
+                                        <mat-icon>{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+                                    </button>
+                                    <mat-error *ngIf="loginInfoForm.get('repassword')?.hasError('required')">
+                                        Şifre tekrarı zorunludur
+                                    </mat-error>
+                                    <mat-error *ngIf="loginInfoForm.get('repassword')?.hasError('passwordMismatch')">
+                                        Şifreler uyuşmuyor
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <!-- User Status Field -->
+                                <div class="flex items-center mb-4">
+                                    <mat-checkbox formControlName="isActive" color="primary" class="mr-3">
+                                        Kullanıcı Aktif
+                                    </mat-checkbox>
+                                    <span class="text-sm text-gray-600">
+                                        {{ loginInfoForm.get('isActive')?.value ? 'Kullanıcı aktif olarak oluşturulacak'
+                                        : 'Kullanıcı pasif olarak oluşturulacak' }}
+                                    </span>
+                                </div>
+
+                                <div class="flex justify-between pt-2">
+                                    <button mat-stroked-button matStepperPrevious class="min-w-[120px] h-10 rounded-md">
+                                        <mat-icon class="mr-2">arrow_back</mat-icon>
+                                        Geri
+                                    </button>
+                                </div>
+                            </form>
+                        </mat-step>
+                    </mat-stepper>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="border-t px-4 sm:px-6 py-3 bg-gray-50 rounded-b-3xl flex-shrink-0">
+                    <!-- Alert Section -->
+                    <div class="mb-3" *ngIf="showModalAlert">
+                        <fuse-alert [appearance]="'outline'" [showIcon]="false" [type]="modalAlert?.type"
+                            [@shake]="modalAlert?.type === 'error'" class="w-full">
+                            {{modalAlert?.message}}
+                        </fuse-alert>
+                    </div>
+                    <!-- Buttons Section -->
+                    <div class="flex flex-col sm:flex-row justify-end items-center gap-3">
+                        <button *ngIf="isLastStep" type="button" mat-flat-button [color]="'warn'" (click)="closeModal()"
+                            [disabled]="loading"
+                            class="w-full sm:w-auto min-w-[120px] h-10 rounded-md order-2 sm:order-1">
+                            İptal
+                        </button>
+                        <button *ngIf="isLastStep" type="button" mat-flat-button [color]="'primary'" (click)="create()"
+                            class="w-full sm:w-auto min-w-[120px] h-10 rounded-md order-1 sm:order-2"
+                            [disabled]="loading || personalInfoForm.invalid || loginInfoForm.invalid">
+                            <span *ngIf="!loading">Kullanıcı Ekle</span>
+                            <span *ngIf="loading" class="flex items-center gap-2">
+                                <mat-progress-spinner [diameter]="16" [mode]="'indeterminate'"
+                                    color="primary"></mat-progress-spinner>
+                                Kaydediliyor...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update Modal -->
+        <div *ngIf="showUpdateModal"
+            class="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50 p-4"
+            style="z-index: 1000;">
+            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl border border-gray-200 relative max-h-[90vh] overflow-hidden flex flex-col"
+                style="z-index: 1001;">
+                <!-- Modal Header -->
+                <div
+                    class="flex justify-between items-center border-b px-6 sm:px-8 py-6 sticky top-0 bg-white rounded-t-3xl z-10 flex-shrink-0">
+                    <h1 class="text-2xl font-bold text-gray-800">Kullanıcı Güncelleme Formu</h1>
+                    <button mat-icon-button (click)="closeModal()" class="ml-4" aria-label="Kapat">
+                        <mat-icon [svgIcon]="'heroicons_outline:x'"></mat-icon>
+                    </button>
+                </div>
+
+                <!-- Modal Body with Stepper -->
+                <div class="flex-1 overflow-y-auto">
+                    <mat-stepper #updateStepper orientation="horizontal" linear class="p-4 sm:p-6"
+                        (selectionChange)="onStepChange($event)">
+                        <!-- Step 1: Personal Information -->
+                        <mat-step [stepControl]="personalInfoForm" label="Kişisel Bilgiler">
+                            <form [formGroup]="personalInfoForm" class="space-y-4 py-4">
+                                <div class="text-center mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-1">Kişisel Bilgiler</h3>
+                                    <p class="text-sm text-gray-600">Kullanıcının temel bilgilerini güncelleyiniz</p>
+                                </div>
+
+                                <!-- First Name and Last Name Fields - Side by Side -->
+                                <div class="name-fields-container">
+                                    <!-- First Name Field -->
+                                    <div class="name-field-wrapper">
+                                        <mat-form-field appearance="fill" class="fuse-mat-dense"
+                                            [subscriptSizing]="'dynamic'">
+                                            <mat-label>Ad</mat-label>
+                                            <input matInput id="updateFirstName" type="text" formControlName="firstName"
+                                                placeholder="Adınızı giriniz" maxlength="50" autocomplete="given-name"
+                                                class="always-visible-placeholder">
+                                            <mat-error *ngIf="personalInfoForm.get('firstName')?.hasError('required')">
+                                                Ad zorunludur
+                                            </mat-error>
+                                            <mat-error *ngIf="personalInfoForm.get('firstName')?.hasError('minlength')">
+                                                En az 2 karakter olmalıdır
+                                            </mat-error>
+                                        </mat-form-field>
+                                    </div>
+
+                                    <!-- Last Name Field -->
+                                    <div class="name-field-wrapper">
+                                        <mat-form-field appearance="fill" class="fuse-mat-dense"
+                                            [subscriptSizing]="'dynamic'">
+                                            <mat-label>Soyad</mat-label>
+                                            <input matInput id="updateLastName" type="text" formControlName="lastName"
+                                                placeholder="Soyadınızı giriniz" maxlength="50"
+                                                autocomplete="family-name" class="always-visible-placeholder">
+                                            <mat-error *ngIf="personalInfoForm.get('lastName')?.hasError('required')">
+                                                Soyad zorunludur
+                                            </mat-error>
+                                            <mat-error *ngIf="personalInfoForm.get('lastName')?.hasError('minlength')">
+                                                En az 2 karakter olmalıdır
+                                            </mat-error>
+                                        </mat-form-field>
+                                    </div>
+                                </div>
+
+                                <!-- Email Field -->
+                                <mat-form-field appearance="fill" class="fuse-mat-dense w-full"
+                                    [subscriptSizing]="'dynamic'">
+                                    <mat-label>E-posta</mat-label>
+                                    <input matInput id="updateEmail" type="email" formControlName="email"
+                                        placeholder="ornek@email.com" maxlength="100" autocomplete="email"
+                                        class="always-visible-placeholder">
+                                    <mat-error *ngIf="personalInfoForm.get('email')?.hasError('required')">
+                                        E-posta zorunludur
+                                    </mat-error>
+                                    <mat-error *ngIf="personalInfoForm.get('email')?.hasError('email')">
+                                        Geçerli bir e-posta adresi giriniz
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <!-- Phone Field -->
+                                <mat-form-field appearance="fill" class="fuse-mat-dense w-full"
+                                    [subscriptSizing]="'dynamic'">
+                                    <mat-label>Telefon No</mat-label> <input matInput id="updatePhoneNumber" type="tel"
+                                        formControlName="phoneNumber" placeholder="05551234567" maxlength="11"
+                                        minlength="11" autocomplete="tel" class="always-visible-placeholder">
+                                    <mat-error *ngIf="personalInfoForm.get('phoneNumber')?.hasError('required')">
+                                        Telefon numarası zorunludur
+                                    </mat-error>
+                                    <mat-error *ngIf="personalInfoForm.get('phoneNumber')?.hasError('pattern')">
+                                        Geçerli bir telefon numarası giriniz
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <!-- Identity Number Field -->
+                                <mat-form-field appearance="fill" class="fuse-mat-dense w-full"
+                                    [subscriptSizing]="'dynamic'">
+                                    <mat-label>TC Kimlik No</mat-label>
+                                    <input matInput id="updateIdentityNumber" type="text"
+                                        formControlName="identityNumber" placeholder="12345678901" maxlength="11"
+                                        minlength="11" class="always-visible-placeholder">
+                                    <mat-error *ngIf="personalInfoForm.get('identityNumber')?.hasError('required')">
+                                        TC Kimlik numarası zorunludur
+                                    </mat-error>
+                                    <mat-error *ngIf="personalInfoForm.get('identityNumber')?.hasError('pattern')">
+                                        TC Kimlik numarası 11 haneli olmalıdır
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <!-- User Role Field -->
+                                <mat-form-field appearance="fill" class="fuse-mat-dense w-full"
+                                    [subscriptSizing]="'dynamic'">
+                                    <mat-label>Kullanıcı Rolü</mat-label>
+                                    <mat-select id="updateRoleId" formControlName="roleId" placeholder="Rol seçiniz"
+                                        class="always-visible-placeholder">
+                                        <mat-option [value]="1">Admin</mat-option>
+                                        <mat-option [value]="2">System</mat-option>
+                                        <mat-option [value]="3">Doctor</mat-option>
+                                        <mat-option [value]="4">Reporter</mat-option>
+                                        <mat-option [value]="5">Company</mat-option>
+                                        <mat-option [value]="6">Hospital</mat-option>
+                                    </mat-select>
+                                    <mat-error *ngIf="personalInfoForm.get('roleId')?.hasError('required')">
+                                        Kullanıcı rolü zorunludur
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <div class="flex justify-end pt-2">
+                                    <button mat-flat-button matStepperNext [color]="'accent'"
+                                        [disabled]="personalInfoForm.invalid" class="min-w-[120px] h-10 rounded-md">
+                                        Giriş Bilgileri
+                                        <mat-icon class="ml-2">arrow_forward</mat-icon>
+                                    </button>
+                                </div>
+                            </form>
+                        </mat-step>
+
+                        <!-- Step 2: Login Information -->
+                        <mat-step [stepControl]="loginInfoForm" label="Giriş Bilgileri">
+                            <form [formGroup]="loginInfoForm" class="space-y-4 py-4">
+                                <div class="text-center mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-1">Giriş Bilgileri</h3>
+                                    <p class="text-sm text-gray-600">Şifre bilgilerini güncelleyiniz (Boş bırakılırsa
+                                        değiştirilmez)</p>
+                                </div>
+
+                                <!-- Password Field -->
+                                <mat-form-field appearance="fill" class="fuse-mat-dense w-full"
+                                    [subscriptSizing]="'dynamic'">
+                                    <mat-label>Yeni Şifre (İsteğe bağlı)</mat-label>
+                                    <input matInput id="updatePassword" [type]="showPassword ? 'text' : 'password'"
+                                        formControlName="password" placeholder="Yeni şifrenizi giriniz" maxlength="50"
+                                        autocomplete="new-password" class="always-visible-placeholder">
+                                    <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()"
+                                        [attr.aria-label]="'Şifreyi ' + (showPassword ? 'gizle' : 'göster')"
+                                        [attr.aria-pressed]="showPassword">
+                                        <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+                                    </button>
+                                    <mat-error *ngIf="loginInfoForm.get('password')?.hasError('minlength')">
+                                        En az 6 karakter olmalıdır
+                                    </mat-error>
+                                    <mat-error *ngIf="loginInfoForm.get('password')?.hasError('pattern')">
+                                        Şifre en az bir büyük harf, bir küçük harf ve bir rakam içermelidir
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <!-- Confirm Password Field -->
+                                <mat-form-field appearance="fill" class="fuse-mat-dense w-full"
+                                    [subscriptSizing]="'dynamic'">
+                                    <mat-label>Yeni Şifre Tekrarı</mat-label>
+                                    <input matInput id="updateRepassword"
+                                        [type]="showConfirmPassword ? 'text' : 'password'" formControlName="repassword"
+                                        placeholder="Yeni şifrenizi tekrar giriniz" maxlength="50"
+                                        autocomplete="new-password" class="always-visible-placeholder">
+                                    <button mat-icon-button matSuffix type="button"
+                                        (click)="toggleConfirmPasswordVisibility()"
+                                        [attr.aria-label]="'Şifreyi ' + (showConfirmPassword ? 'gizle' : 'göster')"
+                                        [attr.aria-pressed]="showConfirmPassword">
+                                        <mat-icon>{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+                                    </button>
+                                    <mat-error *ngIf="loginInfoForm.get('repassword')?.hasError('passwordMismatch')">
+                                        Şifreler uyuşmuyor
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <!-- User Status Field -->
+                                <div class="flex items-center mb-4">
+                                    <mat-checkbox formControlName="isActive" color="primary" class="mr-3">
+                                        Kullanıcı Aktif
+                                    </mat-checkbox>
+                                    <span class="text-sm text-gray-600">
+                                        {{ loginInfoForm.get('isActive')?.value ? 'Kullanıcı aktif olarak güncellenecek'
+                                        : 'Kullanıcı pasif olarak güncellenecek' }}
+                                    </span>
+                                </div>
+
+                                <div class="flex justify-between pt-2">
+                                    <button mat-stroked-button matStepperPrevious class="min-w-[120px] h-10 rounded-md">
+                                        <mat-icon class="mr-2">arrow_back</mat-icon>
+                                        Geri
+                                    </button>
+                                </div>
+                            </form>
+                        </mat-step>
+                    </mat-stepper>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="border-t px-4 sm:px-6 py-3 bg-gray-50 rounded-b-3xl flex-shrink-0">
+                    <!-- Alert Section -->
+                    <div class="mb-3" *ngIf="showModalAlert">
+                        <fuse-alert [appearance]="'outline'" [showIcon]="false" [type]="modalAlert?.type"
+                            [@shake]="modalAlert?.type === 'error'" class="w-full">
+                            {{modalAlert?.message}}
+                        </fuse-alert>
+                    </div>
+                    <!-- Buttons Section -->
+                    <div class="flex flex-col sm:flex-row justify-end items-center gap-3">
+                        <button *ngIf="isLastStep" type="button" mat-flat-button [color]="'warn'" (click)="closeModal()"
+                            [disabled]="loading"
+                            class="w-full sm:w-auto min-w-[120px] h-10 rounded-md order-2 sm:order-1">
+                            İptal
+                        </button> <button *ngIf="isLastStep" type="button" mat-flat-button [color]="'primary'"
+                            (click)="update()" class="w-full sm:w-auto min-w-[120px] h-10 rounded-md order-1 sm:order-2"
+                            [disabled]="loading || !isUpdateFormValid()">
+                            <span *ngIf="!loading">Kullanıcı Güncelle</span>
+                            <span *ngIf="loading" class="flex items-center gap-2">
+                                <mat-progress-spinner [diameter]="16" [mode]="'indeterminate'"
+                                    color="primary"></mat-progress-spinner>
+                                Güncelleniyor...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

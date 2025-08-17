@@ -1,0 +1,33 @@
+/**
+ * Global placeholder visibility styles
+ * These rules ensure placeholders are visible in all states
+ */
+
+/* Input placeholders */
+input.mat-mdc-input-element::placeholder,
+textarea.mat-mdc-input-element::placeholder,
+.always-visible-placeholder::placeholder {
+  color: rgba(0, 0, 0, 0.6) !important;
+  opacity: 1 !important;
+}
+
+/* Focused state */
+.mat-mdc-form-field-focused input.mat-mdc-input-element::placeholder,
+.mat-mdc-form-field-focused textarea.mat-mdc-input-element::placeholder,
+input.mat-mdc-input-element:focus::placeholder,
+textarea.mat-mdc-input-element:focus::placeholder,
+.always-visible-placeholder:focus::placeholder {
+  opacity: 1 !important;
+}
+
+/* Select placeholders */
+.mat-mdc-select-placeholder {
+  color: rgba(0, 0, 0, 0.6) !important;
+  opacity: 1 !important;
+}
+
+/* Filled state */
+.mat-mdc-form-field-has-value input.mat-mdc-input-element::placeholder,
+.mat-mdc-form-field-has-value textarea.mat-mdc-input-element::placeholder {
+  opacity: 1 !important;
+}
